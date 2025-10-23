@@ -1,62 +1,101 @@
 # LCF Auto Performance
 
-Application web Next.js avec Tailwind CSS pour le garage LCF Auto Performance.
+Application web professionnelle pour le garage LCF Auto Performance, incluant système de gestion de rendez-vous, authentification sécurisée et interface d'administration.
 
-## Technologies
+🚀 **[Voir la documentation complète du projet](./PROJET.md)**
+
+## 🎯 Fonctionnalités principales
+
+- ✅ **Authentification complète** - Email/password et Google OAuth
+- ✅ **Système de rendez-vous** - Réservation en ligne avec prévention des conflits
+- ✅ **Espace client** - Dashboard personnel avec gestion des RDV
+- ✅ **Pages services** - Entretien, Réparation, Re-programmation
+- ✅ **Thème clair/sombre** - Toggle automatique avec préférences système
+- ✅ **Design responsive** - Mobile-first avec Tailwind CSS
+- 🔄 **Administration** - Gestion utilisateurs et véhicules (en cours)
+- 🔄 **Avis Google** - Intégration API Google Business (planifié)
+
+## 🛠️ Technologies
 
 - **Next.js 16** - Framework React avec App Router
-- **React 19** - Bibliothèque UI
 - **TypeScript** - Typage statique
-- **Tailwind CSS 3** - Framework CSS utility-first
+- **Tailwind CSS** - Styling utility-first
+- **Firebase** - Authentication, Firestore, Storage
+- **React Icons** - Feather Icons
 
-## Installation
+## 🚀 Installation
 
 ```bash
+# Installation
 npm install
-```
 
-## Développement
+# Configuration
+cp .env.local.example .env.local
+# Éditer .env.local avec vos credentials Firebase
 
-Démarrer le serveur de développement :
-
-```bash
+# Développement
 npm run dev
 ```
 
-Ouvrir [http://localhost:3000](http://localhost:3000) dans votre navigateur.
+Ouvrir [http://localhost:3000](http://localhost:3000)
 
-## Production
-
-Construire l'application pour la production :
+## 📦 Build
 
 ```bash
+# Build pour production
 npm run build
-```
 
-Démarrer le serveur de production :
-
-```bash
+# Démarrer en production
 npm start
 ```
 
-## Structure du projet
+## 📋 Structure
 
 ```
-├── src/
-│   └── app/
-│       ├── layout.tsx       # Layout principal de l'application
-│       ├── page.tsx          # Page d'accueil
-│       └── globals.css       # Styles globaux avec Tailwind
-├── public/                   # Fichiers statiques
-├── next.config.ts           # Configuration Next.js
-├── tailwind.config.js       # Configuration Tailwind CSS
-└── tsconfig.json            # Configuration TypeScript
+src/
+├── app/                 # Pages Next.js
+│   ├── dashboard/      # Espace client
+│   ├── rendez-vous/    # Système de réservation
+│   ├── services/       # Pages de services
+│   └── login/          # Authentification
+├── components/         # Composants réutilisables
+│   ├── ui/            # Boutons, inputs, cards...
+│   ├── layout/        # Header, Footer
+│   └── auth/          # Routes protégées
+├── lib/               # Utilitaires
+│   ├── firebase/      # Configuration Firebase
+│   └── firestore/     # Helpers base de données
+└── types/             # Types TypeScript
 ```
 
-## Fonctionnalités
+## 🎨 Design System
 
-- ✅ Interface moderne et responsive
-- ✅ Support du mode sombre
-- ✅ Optimisé pour les performances
-- ✅ Configuration TypeScript stricte
-- ✅ Styling avec Tailwind CSS
+- **Couleur d'accent**: #1CCEFF (cyan)
+- **Polices**: Inter (corps), Poppins (titres)
+- **Thèmes**: Clair & Sombre avec transition fluide
+- **Responsive**: Mobile-first design
+
+## 🔐 Sécurité
+
+- Authentification Firebase
+- Routes protégées par rôles (User, AgendaManager, Admin)
+- Transactions Firestore anti-conflits
+- Règles de sécurité Firestore (à finaliser)
+
+## 📝 Configuration Firebase
+
+Créez un projet Firebase et activez:
+1. Authentication (Email/Password + Google)
+2. Cloud Firestore
+3. Cloud Storage
+4. (Optionnel) Cloud Functions
+
+Consultez `.env.local.example` pour les variables requises.
+
+## 🤝 Contribution
+
+Voir [PROJET.md](./PROJET.md) pour la roadmap complète et les fonctionnalités à implémenter.
+
+## 📄 Licence
+
+© 2024 LCF Auto Performance - Tous droits réservés
