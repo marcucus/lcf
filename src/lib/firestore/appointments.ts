@@ -24,6 +24,8 @@ export async function createAppointment(
   vehicleInfo: VehicleInfo,
   customerNotes?: string
 ): Promise<string> {
+  if (!db) throw new Error('Firebase not configured');
+  
   try {
     const appointmentData = {
       userId,
@@ -39,7 +41,7 @@ export async function createAppointment(
     // Use transaction to ensure no double booking
     const appointmentRef = await runTransaction(db, async (transaction) => {
       // Check if slot is available
-      const appointmentsRef = collection(db, 'appointments');
+      const appointmentsRef = collection(db!, 'appointments');
       const q = query(
         appointmentsRef,
         where('dateTime', '==', Timestamp.fromDate(dateTime)),
@@ -53,7 +55,7 @@ export async function createAppointment(
       }
 
       // Create the appointment
-      const newAppointmentRef = doc(collection(db, 'appointments'));
+      const newAppointmentRef = doc(collection(db!, 'appointments'));
       transaction.set(newAppointmentRef, appointmentData);
       
       return newAppointmentRef.id;
@@ -68,6 +70,8 @@ export async function createAppointment(
 
 // Get all appointments for a user
 export async function getUserAppointments(userId: string): Promise<Appointment[]> {
+  if (!db) throw new Error('Firebase not configured');
+  
   try {
     const appointmentsRef = collection(db, 'appointments');
     const q = query(
@@ -89,6 +93,8 @@ export async function getUserAppointments(userId: string): Promise<Appointment[]
 
 // Get all appointments (for admin/agenda manager)
 export async function getAllAppointments(): Promise<Appointment[]> {
+  if (!db) throw new Error('Firebase not configured');
+  
   try {
     const appointmentsRef = collection(db, 'appointments');
     const q = query(appointmentsRef, orderBy('dateTime', 'asc'));
@@ -109,6 +115,8 @@ export async function updateAppointment(
   appointmentId: string,
   updates: Partial<Appointment>
 ): Promise<void> {
+  if (!db) throw new Error('Firebase not configured');
+  
   try {
     const appointmentRef = doc(db, 'appointments', appointmentId);
     await updateDoc(appointmentRef, updates);
@@ -120,6 +128,8 @@ export async function updateAppointment(
 
 // Cancel appointment (with 24h check on client side)
 export async function cancelAppointment(appointmentId: string): Promise<void> {
+  if (!db) throw new Error('Firebase not configured');
+  
   try {
     const appointmentRef = doc(db, 'appointments', appointmentId);
     await updateDoc(appointmentRef, {
@@ -133,6 +143,8 @@ export async function cancelAppointment(appointmentId: string): Promise<void> {
 
 // Delete appointment (admin only)
 export async function deleteAppointment(appointmentId: string): Promise<void> {
+  if (!db) throw new Error('Firebase not configured');
+  
   try {
     const appointmentRef = doc(db, 'appointments', appointmentId);
     await deleteDoc(appointmentRef);
@@ -153,6 +165,8 @@ export function canModifyAppointment(appointmentDateTime: Date): boolean {
 
 // Get available time slots for a specific date
 export async function getAvailableSlots(date: Date): Promise<string[]> {
+  if (!db) return [];
+  
   try {
     const allSlots = [
       '10:00', '10:30', '11:00', '11:30',
