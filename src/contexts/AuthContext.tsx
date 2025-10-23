@@ -22,6 +22,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth || !db) {
+      console.warn('Firebase not configured, skipping authentication');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         await loadUserData(firebaseUser);
@@ -35,6 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loadUserData = async (firebaseUser: FirebaseUser) => {
+    if (!db) return;
+    
     try {
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       if (userDoc.exists()) {
@@ -63,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     firstName: string,
     lastName: string
   ) => {
+    if (!auth || !db) throw new Error('Firebase not configured');
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const newUser: User = {
       uid: userCredential.user.uid,
@@ -77,10 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!auth) throw new Error('Firebase not configured');
     await signInWithEmailAndPassword(auth, email, password);
   };
 
   const signInWithGoogle = async () => {
+    if (!auth || !db) throw new Error('Firebase not configured');
+    
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
     
@@ -104,11 +117,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (!auth) throw new Error('Firebase not configured');
     await firebaseSignOut(auth);
     setUser(null);
   };
 
   const resetPassword = async (email: string) => {
+    if (!auth) throw new Error('Firebase not configured');
     await sendPasswordResetEmail(auth, email);
   };
 
