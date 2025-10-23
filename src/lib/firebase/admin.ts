@@ -9,7 +9,7 @@ let adminAuth: Auth;
 if (getApps().length === 0) {
   try {
     adminApp = initializeApp({
-      credential: adminApp.credential.cert(serviceAccount as any),
+      credential: App.credential.cert(serviceAccount as any),
     });
     adminDb = getFirestore(adminApp);
     adminAuth = getAuth(adminApp);
