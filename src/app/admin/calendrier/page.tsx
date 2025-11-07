@@ -264,7 +264,7 @@ function CalendarContent() {
                   {stats.today}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Rendez-vous aujourd&apos;hui
+                  Rendez-vous aujourd'hui
                 </p>
               </div>
             </div>

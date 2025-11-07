@@ -177,7 +177,7 @@ export function CalendarView({
               <FiChevronLeft className="w-5 h-5" />
             </button>
             <Button size="sm" variant="outline" onClick={goToToday}>
-              Aujourd&apos;hui
+              Aujourd'hui
             </Button>
             <button
               onClick={goToNext}
