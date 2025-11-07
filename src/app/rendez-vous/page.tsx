@@ -261,12 +261,13 @@ export default function RendezVousPage() {
                           <button
                             key={time}
                             onClick={() => handleTimeSlotSelect(day, time)}
-                            className={`w-full p-2 rounded-lg border-2 transition-all text-sm ${
+                            className={`w-full p-2 rounded-lg border-2 transition-all text-sm flex items-center justify-center gap-1 ${
                               isSelected
                                 ? 'border-accent bg-accent text-white font-semibold'
                                 : 'border-gray-200 dark:border-gray-700 hover:border-accent/50 text-gray-700 dark:text-gray-300'
                             }`}
                           >
+                            {isSelected && <FiCheckCircle className="w-3 h-3" />}
                             {time}
                           </button>
                         );
