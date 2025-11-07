@@ -2,7 +2,12 @@
 
 Application web professionnelle pour le garage LCF Auto Performance, incluant système de gestion de rendez-vous, authentification sécurisée et interface d'administration.
 
-🚀 **[Voir la documentation complète du projet](./PROJET.md)**
+## 📚 Documentation Projet
+
+- 📋 **[ANALYSE.md](./ANALYSE.md)** - Vue d'ensemble et résumé exécutif
+- ✅ **[TASKS.md](./TASKS.md)** - Liste complète des tâches à effectuer
+- 📖 **[PROJET.md](./PROJET.md)** - Documentation technique détaillée
+- 📝 **[specifications.md](./specifications.md)** - Cahier des charges complet
 
 ## 🎯 Fonctionnalités principales
 
