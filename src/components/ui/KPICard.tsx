@@ -5,24 +5,45 @@ interface KPICardProps {
   title: string;
   value: string | number;
   icon: ReactNode;
-  iconColor?: string;
+  iconColor?: 'accent' | 'blue' | 'green' | 'yellow';
   subtitle?: string;
   loading?: boolean;
 }
+
+const colorClasses = {
+  accent: {
+    bg: 'bg-accent/10',
+    text: 'text-accent',
+  },
+  blue: {
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-500',
+  },
+  green: {
+    bg: 'bg-green-500/10',
+    text: 'text-green-500',
+  },
+  yellow: {
+    bg: 'bg-yellow-500/10',
+    text: 'text-yellow-500',
+  },
+};
 
 export function KPICard({
   title,
   value,
   icon,
-  iconColor = 'text-accent',
+  iconColor = 'accent',
   subtitle,
   loading = false,
 }: KPICardProps) {
+  const colors = colorClasses[iconColor];
+
   return (
     <Card>
       <div className="flex items-center space-x-4">
-        <div className={`p-3 bg-${iconColor.replace('text-', '')}/10 rounded-lg`}>
-          <div className={`w-8 h-8 ${iconColor}`}>{icon}</div>
+        <div className={`p-3 ${colors.bg} rounded-lg`}>
+          <div className={`w-8 h-8 ${colors.text}`}>{icon}</div>
         </div>
         <div className="flex-1">
           {loading ? (

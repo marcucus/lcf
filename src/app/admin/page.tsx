@@ -67,7 +67,7 @@ function AdminDashboardContent() {
             title="Rendez-vous aujourd'hui"
             value={todayAppointments.length}
             icon={<FiCalendar />}
-            iconColor="text-accent"
+            iconColor="accent"
             loading={loading}
           />
           
@@ -75,7 +75,7 @@ function AdminDashboardContent() {
             title="Rendez-vous cette semaine"
             value={weekAppointments.length}
             icon={<FiClock />}
-            iconColor="text-blue-500"
+            iconColor="blue"
             loading={loading}
           />
           
@@ -83,7 +83,7 @@ function AdminDashboardContent() {
             title="Véhicules en vente"
             value={vehiclesCount}
             icon={<FiTruck />}
-            iconColor="text-green-500"
+            iconColor="green"
             loading={loading}
           />
           
@@ -91,7 +91,7 @@ function AdminDashboardContent() {
             title="Avis Google"
             value="N/A"
             icon={<FiStar />}
-            iconColor="text-yellow-500"
+            iconColor="yellow"
             subtitle="Intégration à venir"
             loading={false}
           />

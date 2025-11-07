@@ -4,6 +4,7 @@ import {
   query,
   where,
   orderBy,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { Vehicle } from '@/types';
@@ -31,13 +32,19 @@ export async function getVehiclesForSale(): Promise<Vehicle[]> {
   }
 }
 
-// Get count of vehicles for sale
+// Get count of vehicles for sale (optimized with count aggregation)
 export async function getVehiclesForSaleCount(): Promise<number> {
   if (!db) return 0;
   
   try {
-    const vehicles = await getVehiclesForSale();
-    return vehicles.length;
+    const vehiclesRef = collection(db, 'vehicles');
+    const q = query(
+      vehiclesRef,
+      where('isSold', '==', false)
+    );
+    
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
   } catch (error) {
     console.error('Error getting vehicles count:', error);
     return 0;
