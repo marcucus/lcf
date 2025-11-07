@@ -158,3 +158,11 @@ export default function AdminPage() {
     </div>
   );
 }
+
+export default function AdminDashboardPage() {
+  return (
+    <ProtectedRoute allowedRoles={['admin', 'agendaManager']}>
+      <AdminDashboardContent />
+    </ProtectedRoute>
+  );
+}

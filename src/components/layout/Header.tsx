@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { FiMenu, FiX, FiUser, FiLogOut } from 'react-icons/fi';
+import { FiMenu, FiX, FiUser, FiLogOut, FiCalendar } from 'react-icons/fi';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -72,6 +72,16 @@ export function Header() {
                       </Link>
                       {(user.role === 'admin' || user.role === 'agendaManager') && (
                         <Link
+                          href="/admin/calendrier"
+                          className="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <FiCalendar className="w-4 h-4" />
+                          <span>Calendrier</span>
+                        </Link>
+                      )}
+                      {user.role === 'admin' && (
+                        <Link
                           href="/admin"
                           className="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
                           onClick={() => setIsUserMenuOpen(false)}
@@ -127,6 +137,14 @@ export function Header() {
                       Mon tableau de bord
                     </button>
                   </Link>
+                  {(user.role === 'admin' || user.role === 'agendaManager') && (
+                    <Link href="/admin/calendrier" onClick={() => setIsMenuOpen(false)}>
+                      <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2">
+                        <FiCalendar className="w-4 h-4" />
+                        <span>Calendrier</span>
+                      </button>
+                    </Link>
+                  )}
                   {user.role === 'admin' && (
                     <Link href="/admin" onClick={() => setIsMenuOpen(false)}>
                       <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200">
