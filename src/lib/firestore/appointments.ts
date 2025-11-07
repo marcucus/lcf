@@ -200,3 +200,67 @@ export async function getAvailableSlots(date: Date): Promise<string[]> {
     return [];
   }
 }
+
+// Get appointments for today
+export async function getTodayAppointments(): Promise<Appointment[]> {
+  if (!db) return [];
+  
+  try {
+    const appointmentsRef = collection(db, 'appointments');
+    const today = new Date();
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const q = query(
+      appointmentsRef,
+      where('dateTime', '>=', Timestamp.fromDate(startOfDay)),
+      where('dateTime', '<=', Timestamp.fromDate(endOfDay)),
+      where('status', '==', 'confirmed'),
+      orderBy('dateTime', 'asc')
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      appointmentId: doc.id,
+      ...doc.data(),
+    })) as Appointment[];
+  } catch (error) {
+    console.error('Error getting today appointments:', error);
+    return [];
+  }
+}
+
+// Get appointments for the current week
+export async function getWeekAppointments(): Promise<Appointment[]> {
+  if (!db) return [];
+  
+  try {
+    const appointmentsRef = collection(db, 'appointments');
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const q = query(
+      appointmentsRef,
+      where('dateTime', '>=', Timestamp.fromDate(startOfWeek)),
+      where('dateTime', '<=', Timestamp.fromDate(endOfWeek)),
+      where('status', '==', 'confirmed'),
+      orderBy('dateTime', 'asc')
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      appointmentId: doc.id,
+      ...doc.data(),
+    })) as Appointment[];
+  } catch (error) {
+    console.error('Error getting week appointments:', error);
+    return [];
+  }
+}
