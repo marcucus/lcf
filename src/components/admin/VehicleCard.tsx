@@ -34,13 +34,13 @@ export function VehicleCard({
 
   const mainImage = vehicle.imageUrls && vehicle.imageUrls.length > 0
     ? vehicle.imageUrls[0]
-    : '/placeholder-car.jpg';
+    : null;
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       {/* Image Section */}
       <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
-        {vehicle.imageUrls && vehicle.imageUrls.length > 0 ? (
+        {mainImage ? (
           <Image
             src={mainImage}
             alt={`${vehicle.make} ${vehicle.model}`}
