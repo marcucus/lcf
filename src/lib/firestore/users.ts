@@ -34,7 +34,10 @@ export async function getAllUsers(
     }
 
     const snapshot = await getDocs(q);
-    const users = snapshot.docs.map((doc) => doc.data() as User);
+    const users = snapshot.docs.map((doc) => ({
+      uid: doc.id,
+      ...doc.data(),
+    } as User));
     const lastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
 
     return { users, lastDoc: lastVisible };
@@ -51,7 +54,10 @@ export async function getUserById(userId: string): Promise<User | null> {
   try {
     const userDoc = await getDoc(doc(db, 'users', userId));
     if (userDoc.exists()) {
-      return userDoc.data() as User;
+      return {
+        uid: userDoc.id,
+        ...userDoc.data(),
+      } as User;
     }
     return null;
   } catch (error) {
@@ -61,6 +67,13 @@ export async function getUserById(userId: string): Promise<User | null> {
 }
 
 // Create a new user manually (admin only)
+// NOTE: This function creates only the Firestore user document.
+// In a production environment, this should be implemented as a Cloud Function
+// that uses Firebase Admin SDK to:
+// 1. Create the Firebase Auth account
+// 2. Send a password reset email to the user
+// 3. Create the Firestore user document
+// For now, this creates a user document that can be linked when the user signs up.
 export async function createUser(
   email: string,
   firstName: string,
@@ -70,12 +83,9 @@ export async function createUser(
   if (!db) throw new Error('Firebase not configured');
 
   try {
-    // Note: In a real implementation, this would need to use Firebase Admin SDK
-    // on the backend to create the authentication account first.
-    // For now, we'll create a user document with a placeholder UID.
-    // This should be done via a Cloud Function in production.
-    
-    const newUser: Omit<User, 'uid'> = {
+    // Create user document with email as a reference
+    // The actual Firebase Auth account should be created via Cloud Function
+    const newUser: Omit<User, 'uid'> & { uid?: string } = {
       email,
       firstName,
       lastName,
@@ -84,6 +94,10 @@ export async function createUser(
     };
 
     const docRef = await addDoc(collection(db, 'users'), newUser);
+    
+    // Update the document with its own ID as uid
+    await updateDoc(doc(db, 'users', docRef.id), { uid: docRef.id });
+    
     return docRef.id;
   } catch (error) {
     console.error('Error creating user:', error);
@@ -148,7 +162,10 @@ export async function searchUsers(searchTerm: string): Promise<User[]> {
     
     const searchLower = searchTerm.toLowerCase();
     const users = snapshot.docs
-      .map((doc) => doc.data() as User)
+      .map((doc) => ({
+        uid: doc.id,
+        ...doc.data(),
+      } as User))
       .filter((user) => 
         user.firstName.toLowerCase().includes(searchLower) ||
         user.lastName.toLowerCase().includes(searchLower) ||
@@ -171,7 +188,10 @@ export async function getUsersByRole(role: UserRole): Promise<User[]> {
     const q = query(usersRef, where('role', '==', role), orderBy('createdAt', 'desc'));
     
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data() as User);
+    return snapshot.docs.map((doc) => ({
+      uid: doc.id,
+      ...doc.data(),
+    } as User));
   } catch (error) {
     console.error('Error getting users by role:', error);
     throw error;

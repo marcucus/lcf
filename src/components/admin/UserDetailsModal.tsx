@@ -205,7 +205,10 @@ export function UserDetailsModal({
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <p className="font-semibold text-gray-900 dark:text-white capitalize">
-                          {appointment.serviceType.replace(/([A-Z])/g, ' $1').trim()}
+                          {appointment.serviceType === 'entretien' ? 'Entretien' :
+                           appointment.serviceType === 'reparation' ? 'Réparation' :
+                           appointment.serviceType === 'reprogrammation' ? 'Re-programmation' :
+                           appointment.serviceType}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {formatDateTime(appointment.dateTime)}

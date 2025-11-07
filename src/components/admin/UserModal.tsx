@@ -186,7 +186,8 @@ export function UserModal({
             {mode === 'create' && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <p className="text-sm text-blue-800 dark:text-blue-300">
-                  ℹ️ Note : L&apos;utilisateur recevra un email pour définir son mot de passe.
+                  ℹ️ Note : Pour le moment, cette fonctionnalité crée uniquement l&apos;entrée utilisateur. 
+                  La création du compte Firebase Auth doit être effectuée séparément.
                 </p>
               </div>
             )}
