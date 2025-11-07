@@ -1,5 +1,12 @@
 "use client";
 
+const handleReload = () => {
+  // Attempt to reconnect and reload the page
+  if (typeof window !== 'undefined') {
+    window.location.reload();
+  }
+};
+
 export default function OfflinePage() {
   return (
     <div className="container mx-auto px-4 py-16">
@@ -81,7 +88,7 @@ export default function OfflinePage() {
         </div>
 
         <button
-          onClick={() => window.location.reload()}
+          onClick={handleReload}
           className="px-6 py-3 bg-[#1CCEFF] text-white rounded-lg font-semibold hover:bg-[#1CCEFF]/90 transition-colors"
         >
           Réessayer la connexion

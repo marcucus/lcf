@@ -10,6 +10,7 @@
     "lint": "next lint",
     "generate-icons": "node scripts/generate-icons.js"
   },
+  "_comment": "The --webpack flag is required for the build script because next-pwa requires webpack. Next.js 16 uses Turbopack by default, which is not compatible with next-pwa's webpack-based configuration.",
   "keywords": [],
   "author": "",
   "license": "ISC",
