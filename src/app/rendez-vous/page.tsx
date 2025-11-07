@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
-import { FiCheckCircle, FiCalendar, FiClock, FiFileText, FiAlertCircle } from 'react-icons/fi';
+import { FiCheckCircle, FiCalendar, FiClock, FiFileText, FiAlertCircle, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { ServiceType } from '@/types';
+import { startOfWeek, addDays, format, isSameDay, addWeeks } from 'date-fns';
+import { fr } from 'date-fns/locale/fr';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -17,6 +19,8 @@ export default function RendezVousPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     serviceType: '' as ServiceType | '',
     date: '',
@@ -37,6 +41,31 @@ export default function RendezVousPage() {
     '10:00', '10:30', '11:00', '11:30',
     '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
   ];
+
+  // Get the week days (Monday to Friday) for the current week offset
+  const weekDays = useMemo(() => {
+    const today = new Date();
+    const weekStart = startOfWeek(addWeeks(today, currentWeekOffset), { weekStartsOn: 1 }); // Start on Monday
+    return Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
+  }, [currentWeekOffset]);
+
+  // Handle time slot selection
+  const handleTimeSlotSelect = (day: Date, time: string) => {
+    setSelectedDate(day);
+    setFormData({ 
+      ...formData, 
+      date: format(day, 'yyyy-MM-dd'),
+      time 
+    });
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeekOffset(prev => prev + 1);
+  };
+
+  const goToPreviousWeek = () => {
+    setCurrentWeekOffset(prev => Math.max(0, prev - 1));
+  };
 
   const handleNext = () => {
     if (currentStep < 4) {
@@ -188,33 +217,63 @@ export default function RendezVousPage() {
                 Choisissez la date et l&apos;heure
               </h2>
               
-              <Input
-                label="Date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                min={new Date().toISOString().split('T')[0]}
-              />
+              {/* Week Navigation */}
+              <div className="flex items-center justify-between mb-4">
+                <Button
+                  variant="outline"
+                  onClick={goToPreviousWeek}
+                  disabled={currentWeekOffset === 0}
+                  className="flex items-center gap-2"
+                >
+                  <FiChevronLeft /> Semaine précédente
+                </Button>
+                <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                  {format(weekDays[0], 'd MMM', { locale: fr })} - {format(weekDays[4], 'd MMM yyyy', { locale: fr })}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={goToNextWeek}
+                  className="flex items-center gap-2"
+                >
+                  Semaine suivante <FiChevronRight />
+                </Button>
+              </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                  Créneau horaire
-                </label>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {timeSlots.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => setFormData({ ...formData, time })}
-                      className={`p-3 rounded-lg border-2 transition-all ${
-                        formData.time === time
-                          ? 'border-accent bg-accent/10 text-accent font-semibold'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-accent/50'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+              {/* Weekly Calendar View */}
+              <div className="grid grid-cols-5 gap-4">
+                {weekDays.map((day, index) => (
+                  <div key={index} className="flex flex-col">
+                    {/* Day Header */}
+                    <div className="text-center mb-3 pb-2 border-b-2 border-gray-200 dark:border-gray-700">
+                      <div className="text-sm font-bold text-gray-900 dark:text-white uppercase">
+                        {format(day, 'EEEE', { locale: fr })}
+                      </div>
+                      <div className="text-lg font-semibold text-gray-700 dark:text-gray-400">
+                        {format(day, 'd MMM', { locale: fr })}
+                      </div>
+                    </div>
+                    
+                    {/* Time Slots */}
+                    <div className="space-y-2">
+                      {timeSlots.map((time) => {
+                        const isSelected = selectedDate && isSameDay(selectedDate, day) && formData.time === time;
+                        return (
+                          <button
+                            key={time}
+                            onClick={() => handleTimeSlotSelect(day, time)}
+                            className={`w-full p-2 rounded-lg border-2 transition-all text-sm ${
+                              isSelected
+                                ? 'border-accent bg-accent text-white font-semibold'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-accent/50 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
