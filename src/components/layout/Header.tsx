@@ -70,7 +70,7 @@ export function Header() {
                       >
                         Mon tableau de bord
                       </Link>
-                      {user.role === 'admin' && (
+                      {(user.role === 'admin' || user.role === 'agendaManager') && (
                         <Link
                           href="/admin"
                           className="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
