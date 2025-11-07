@@ -3,8 +3,9 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { FiCalendar, FiStar, FiTruck, FiUsers } from 'react-icons/fi';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
-export default function AdminPage() {
+function AdminPage() {
   const { user } = useAuth();
 
   return (
@@ -162,7 +163,7 @@ export default function AdminPage() {
 export default function AdminDashboardPage() {
   return (
     <ProtectedRoute allowedRoles={['admin', 'agendaManager']}>
-      <AdminDashboardContent />
+      <AdminPage />
     </ProtectedRoute>
   );
 }
