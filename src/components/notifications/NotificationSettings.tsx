@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, BellOff, Check, X } from 'react-icons/fi';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import { FiBell, FiBellOff, FiCheck, FiX } from 'react-icons/fi';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { NotificationPreferences } from '@/types';
 import {
   getNotificationPreferences,
@@ -124,7 +124,7 @@ export default function NotificationSettings({ userId }: NotificationSettingsPro
       <Card>
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <BellOff className="w-6 h-6 text-gray-400" />
+            <FiBellOff className="w-6 h-6 text-gray-400" />
             <h2 className="text-xl font-semibold">Notifications Push</h2>
           </div>
           <p className="text-gray-500 dark:text-gray-400">
@@ -151,7 +151,7 @@ export default function NotificationSettings({ userId }: NotificationSettingsPro
     <Card>
       <div className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Bell className="w-6 h-6 text-[#1CCEFF]" />
+          <FiBell className="w-6 h-6 text-[#1CCEFF]" />
           <h2 className="text-xl font-semibold">Notifications Push</h2>
         </div>
 
@@ -199,9 +199,9 @@ export default function NotificationSettings({ userId }: NotificationSettingsPro
             }`}
           >
             {message.type === 'success' ? (
-              <Check className="w-5 h-5 flex-shrink-0" />
+              <FiCheck className="w-5 h-5 flex-shrink-0" />
             ) : (
-              <X className="w-5 h-5 flex-shrink-0" />
+              <FiX className="w-5 h-5 flex-shrink-0" />
             )}
             <span>{message.text}</span>
           </div>
