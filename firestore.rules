@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to get user data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && getUserData().role == 'admin';
+    }
+    
+    // Helper function to check if user is agenda manager or admin
+    function isManagerOrAdmin() {
+      return isAuthenticated() && 
+             getUserData().role in ['admin', 'agendaManager'];
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check 24-hour rule for appointments
+    // Note: This is a first layer of defense. Cloud Functions provide the authoritative check.
+    function canModifyAppointment(appointmentData) {
+      let appointmentTime = appointmentData.dateTime;
+      let now = request.time;
+      let diffInHours = (appointmentTime - now) / duration.value(1, 'h');
+      
+      // Admin and agenda managers can always modify
+      if (isManagerOrAdmin()) {
+        return true;
+      }
+      
+      // Regular users need more than 24 hours
+      return diffInHours > 24;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own data
+      allow read: if isOwner(userId);
+      
+      // Only admins can create, update, or delete users
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Appointments collection
+    match /appointments/{appointmentId} {
+      // Authenticated users can read their own appointments
+      // Managers and admins can read all appointments
+      allow read: if isAuthenticated() && (
+        isManagerOrAdmin() || 
+        isOwner(resource.data.userId)
+      );
+      
+      // Authenticated users can create appointments
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'confirmed' &&
+                      request.resource.data.createdAt == request.time;
+      
+      // Update appointments with 24-hour rule
+      // Note: Cloud Functions provide the authoritative validation
+      allow update: if isAuthenticated() && (
+        // Managers and admins can always update
+        isManagerOrAdmin() ||
+        // Regular users can update their own appointments if:
+        (isOwner(resource.data.userId) && 
+         canModifyAppointment(resource.data))
+      );
+      
+      // Delete appointments with 24-hour rule
+      // Note: Cloud Functions provide the authoritative validation
+      allow delete: if isAuthenticated() && (
+        // Only managers and admins can delete
+        isManagerOrAdmin() ||
+        // Regular users cannot delete, they should cancel instead
+        // (set status to 'cancelled')
+        false
+      );
+    }
+    
+    // Vehicles collection (for vehicle sales)
+    match /vehicles/{vehicleId} {
+      // Anyone can read vehicles
+      allow read: if true;
+      
+      // Only admins can create, update, or delete vehicles
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Response templates collection (for Google Reviews)
+    match /responseTemplates/{templateId} {
+      // Only managers and admins can read
+      allow read: if isManagerOrAdmin();
+      
+      // Only admins can create, update, or delete
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
