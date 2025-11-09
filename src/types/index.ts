@@ -12,6 +12,15 @@ export interface User {
   role: UserRole;
   loyaltyPoints?: number;
   createdAt: Timestamp;
+  fcmToken?: string;
+  notificationPreferences?: NotificationPreferences;
+}
+
+// Notification preferences
+export interface NotificationPreferences {
+  appointmentReminders: boolean;
+  newVehicles: boolean;
+  generalUpdates: boolean;
 }
 
 // Service types

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoyaltyCard } from '@/components/loyalty/LoyaltyCard';
+import NotificationSettings from '@/components/notifications/NotificationSettings';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FiCalendar, FiClock, FiSettings, FiX, FiEdit } from 'react-icons/fi';
@@ -233,6 +234,11 @@ function DashboardContent() {
               </Link>
             </div>
           </Card>
+        </div>
+
+        {/* Notification Settings Section */}
+        <div className="mb-6">
+          <NotificationSettings userId={user?.uid || ''} />
         </div>
       </div>
     </div>
