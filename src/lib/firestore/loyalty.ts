@@ -31,6 +31,7 @@ import {
  */
 export async function getUserLoyaltyPoints(userId: string): Promise<number> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
     
@@ -62,8 +63,9 @@ export async function awardLoyaltyPoints(
   createdBy?: string
 ): Promise<void> {
   try {
+    if (!db) throw new Error('Database not initialized');
     await runTransaction(db, async (transaction) => {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db!, 'users', userId);
       const userDoc = await transaction.get(userRef);
       
       if (!userDoc.exists()) {
@@ -76,7 +78,7 @@ export async function awardLoyaltyPoints(
       });
 
       // Create transaction record
-      const transactionRef = doc(collection(db, 'loyaltyTransactions'));
+      const transactionRef = doc(collection(db!, 'loyaltyTransactions'));
       const transactionData: Omit<LoyaltyTransaction, 'transactionId'> = {
         userId,
         type,
@@ -106,8 +108,9 @@ export async function deductLoyaltyPoints(
   description: string
 ): Promise<void> {
   try {
+    if (!db) throw new Error('Database not initialized');
     await runTransaction(db, async (transaction) => {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db!, 'users', userId);
       const userDoc = await transaction.get(userRef);
       
       if (!userDoc.exists()) {
@@ -126,7 +129,7 @@ export async function deductLoyaltyPoints(
       });
 
       // Create transaction record
-      const transactionRef = doc(collection(db, 'loyaltyTransactions'));
+      const transactionRef = doc(collection(db!, 'loyaltyTransactions'));
       const transactionData: Omit<LoyaltyTransaction, 'transactionId'> = {
         userId,
         type: 'reward_redemption',
@@ -152,6 +155,7 @@ export async function getUserLoyaltyTransactions(
   limitCount: number = 50
 ): Promise<LoyaltyTransaction[]> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const transactionsRef = collection(db, 'loyaltyTransactions');
     const q = query(
       transactionsRef,
@@ -180,6 +184,7 @@ export async function getUserLoyaltyTransactions(
  */
 export async function getActiveRewards(): Promise<Reward[]> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const rewardsRef = collection(db, 'rewards');
     const q = query(
       rewardsRef,
@@ -203,6 +208,7 @@ export async function getActiveRewards(): Promise<Reward[]> {
  */
 export async function getAllRewards(): Promise<Reward[]> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const rewardsRef = collection(db, 'rewards');
     const q = query(rewardsRef, orderBy('createdAt', 'desc'));
     
@@ -222,6 +228,7 @@ export async function getAllRewards(): Promise<Reward[]> {
  */
 export async function getRewardById(rewardId: string): Promise<Reward | null> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const rewardRef = doc(db, 'rewards', rewardId);
     const rewardSnap = await getDoc(rewardRef);
     
@@ -243,6 +250,7 @@ export async function getRewardById(rewardId: string): Promise<Reward | null> {
  */
 export async function createReward(rewardData: Omit<Reward, 'rewardId' | 'createdAt'>): Promise<string> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const rewardsRef = collection(db, 'rewards');
     const docRef = await addDoc(rewardsRef, {
       ...rewardData,
@@ -260,6 +268,7 @@ export async function createReward(rewardData: Omit<Reward, 'rewardId' | 'create
  */
 export async function updateReward(rewardId: string, updates: Partial<Reward>): Promise<void> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const rewardRef = doc(db, 'rewards', rewardId);
     await updateDoc(rewardRef, updates);
   } catch (error) {
@@ -277,11 +286,12 @@ export async function updateReward(rewardId: string, updates: Partial<Reward>): 
  */
 export async function claimReward(userId: string, rewardId: string): Promise<string> {
   try {
+    if (!db) throw new Error('Database not initialized');
     let userRewardId: string = '';
     
     await runTransaction(db, async (transaction) => {
       // Get reward details
-      const rewardRef = doc(db, 'rewards', rewardId);
+      const rewardRef = doc(db!, 'rewards', rewardId);
       const rewardDoc = await transaction.get(rewardRef);
       
       if (!rewardDoc.exists()) {
@@ -299,7 +309,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
       }
       
       // Get user's current points
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db!, 'users', userId);
       const userDoc = await transaction.get(userRef);
       
       if (!userDoc.exists()) {
@@ -325,7 +335,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
       }
       
       // Create user reward record
-      const userRewardRef = doc(collection(db, 'userRewards'));
+      const userRewardRef = doc(collection(db!, 'userRewards'));
       const userRewardData: Omit<UserReward, 'userRewardId'> = {
         userId,
         rewardId,
@@ -340,7 +350,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
       userRewardId = userRewardRef.id;
       
       // Create transaction record
-      const transactionRef = doc(collection(db, 'loyaltyTransactions'));
+      const transactionRef = doc(collection(db!, 'loyaltyTransactions'));
       const transactionData: Omit<LoyaltyTransaction, 'transactionId'> = {
         userId,
         type: 'reward_redemption',
@@ -365,6 +375,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
  */
 export async function getUserRewards(userId: string): Promise<UserReward[]> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const userRewardsRef = collection(db, 'userRewards');
     const q = query(
       userRewardsRef,
@@ -388,6 +399,7 @@ export async function getUserRewards(userId: string): Promise<UserReward[]> {
  */
 export async function markRewardAsUsed(userRewardId: string): Promise<void> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const userRewardRef = doc(db, 'userRewards', userRewardId);
     await updateDoc(userRewardRef, {
       status: 'used',
@@ -408,6 +420,7 @@ export async function markRewardAsUsed(userRewardId: string): Promise<void> {
  */
 export async function getLoyaltySettings(): Promise<LoyaltySettings> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const settingsRef = doc(db, 'loyaltySettings', 'default');
     const settingsSnap = await getDoc(settingsRef);
     
@@ -432,6 +445,7 @@ export async function getLoyaltySettings(): Promise<LoyaltySettings> {
  */
 export async function updateLoyaltySettings(settings: Partial<LoyaltySettings>): Promise<void> {
   try {
+    if (!db) throw new Error('Database not initialized');
     const settingsRef = doc(db, 'loyaltySettings', 'default');
     await updateDoc(settingsRef, settings);
   } catch (error) {
