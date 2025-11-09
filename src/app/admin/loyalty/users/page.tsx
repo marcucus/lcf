@@ -49,7 +49,11 @@ function AdminUsersPointsContent() {
 
   const loadUsers = async () => {
     try {
-      if (!db) throw new Error('Database not initialized');
+      if (!db) {
+        console.error('Firebase non configuré');
+        return;
+      }
+      
       const usersRef = collection(db, 'users');
       const q = query(usersRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);

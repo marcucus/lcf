@@ -6,13 +6,10 @@
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
+    "target": "es2020",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
-  },
-  "compileOnSave": true,
-  "include": ["src"]
+    "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true
   },
   "compileOnSave": true,

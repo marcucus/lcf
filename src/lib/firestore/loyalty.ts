@@ -22,6 +22,14 @@ import {
   LoyaltySettings 
 } from '@/types';
 
+// Helper to check if db is initialized
+function ensureDb() {
+  if (!db) {
+    throw new Error('Firebase Firestore is not initialized');
+  }
+  return db;
+}
+
 // ============================================================================
 // LOYALTY POINTS MANAGEMENT
 // ============================================================================
@@ -289,7 +297,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
     if (!db) throw new Error('Database not initialized');
     let userRewardId: string = '';
     
-    await runTransaction(db, async (transaction) => {
+    await runTransaction(ensureDb(), async (transaction) => {
       // Get reward details
       const rewardRef = doc(db!, 'rewards', rewardId);
       const rewardDoc = await transaction.get(rewardRef);
