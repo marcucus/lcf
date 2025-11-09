@@ -97,12 +97,33 @@ export async function sendEmail(
 
 /**
  * Strip HTML tags for plain text version
- * @param html - HTML string
+ * This function is only used for generating plain text email content from HTML templates.
+ * The HTML input comes from our own templates, not from user input.
+ * @param html - HTML string (from our own templates)
  * @returns Plain text
  */
 function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, '')
+  // Remove HTML tags iteratively to handle nested tags and edge cases
+  let text = html;
+  let prevText = '';
+  
+  // Keep removing tags until no more changes occur
+  while (text !== prevText) {
+    prevText = text;
+    text = text.replace(/<[^>]*>/g, '');
+  }
+  
+  // Decode common HTML entities (decode &amp; last to avoid double-escaping)
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&'); // Decode &amp; last
+  
+  // Normalize whitespace
+  return text
     .replace(/\s+/g, ' ')
     .trim();
 }
