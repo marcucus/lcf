@@ -13,7 +13,7 @@ export const sendAppointmentReminders = onSchedule(
     timeZone: 'Europe/Paris',
   },
   async (event) => {
-    logger.info('Running appointment reminder check...');
+    console.log('Running appointment reminder check...');
     
     const db = admin.firestore();
     const now = new Date();
@@ -33,7 +33,7 @@ export const sendAppointmentReminders = onSchedule(
         .get();
       
       if (appointmentsSnapshot.empty) {
-        logger.info('No appointments found needing reminders');
+        console.log('No appointments found needing reminders');
         return;
       }
       
@@ -120,9 +120,11 @@ export const sendAppointmentReminders = onSchedule(
       });
       
       await Promise.all(promises);
-      logger.info('Appointment reminders processed successfully');
+      console.log('Appointment reminders processed successfully');
+      
     } catch (error) {
       logger.error('Error processing appointment reminders:', error);
       throw error;
     }
-  });
+  }
+);

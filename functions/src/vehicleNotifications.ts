@@ -10,20 +10,20 @@ import { sendMulticastNotification } from './notifications';
 export const onVehicleCreated = onDocumentCreated(
   'vehicles/{vehicleId}',
   async (event) => {
-    logger.info('New vehicle created:', event.params.vehicleId);
-    
-    const vehicleData = event.data?.data();
-    if (!vehicleData) {
-      logger.warn('No vehicle data found');
-      return null;
+    const snapshot = event.data;
+    if (!snapshot) {
+      console.log('No data associated with the event');
+      return;
     }
+    const context = event;
+    console.log('New vehicle created:', context.params?.vehicleId);
     
     const db = admin.firestore();
     
     // Only send notifications for vehicles that are not sold
     if (vehicleData.isSold) {
-      logger.info('Vehicle is already sold, skipping notification');
-      return null;
+      console.log('Vehicle is already sold, skipping notification');
+      return;
     }
     
     try {
@@ -35,8 +35,8 @@ export const onVehicleCreated = onDocumentCreated(
         .get();
       
       if (usersSnapshot.empty) {
-        logger.info('No users with new vehicle notifications enabled');
-        return null;
+        console.log('No users with new vehicle notifications enabled');
+        return;
       }
       
       logger.info(`Found ${usersSnapshot.size} users to notify`);
@@ -51,8 +51,8 @@ export const onVehicleCreated = onDocumentCreated(
       });
       
       if (fcmTokens.length === 0) {
-        logger.info('No valid FCM tokens found');
-        return null;
+        console.log('No valid FCM tokens found');
+        return;
       }
       
       // Format notification message
@@ -71,18 +71,18 @@ export const onVehicleCreated = onDocumentCreated(
         body,
         {
           type: 'new_vehicle',
-          vehicleId: event.params.vehicleId,
-          url: `/vehicules/${event.params.vehicleId}`,
+          vehicleId: context.params?.vehicleId || '',
+          url: `/vehicules/${context.params?.vehicleId}`,
         }
       );
       
-      logger.info('New vehicle notifications sent successfully');
-      return null;
+      console.log('New vehicle notifications sent successfully');
     } catch (error) {
       logger.error('Error sending new vehicle notifications:', error);
       throw error;
     }
-  });
+  }
+);
 
 /**
  * Firestore trigger that runs when a vehicle is updated
@@ -91,20 +91,21 @@ export const onVehicleCreated = onDocumentCreated(
 export const onVehicleUpdated = onDocumentUpdated(
   'vehicles/{vehicleId}',
   async (event) => {
-    const beforeData = event.data?.before.data();
-    const afterData = event.data?.after.data();
-    
-    if (!beforeData || !afterData) {
-      logger.warn('Missing data in vehicle update event');
-      return null;
+    const change = event.data;
+    if (!change) {
+      console.log('No data associated with the event');
+      return;
     }
+    const context = event;
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
     
     // Check if vehicle just became available (was sold, now not sold)
     const wasUnavailable = beforeData.isSold === true;
     const isNowAvailable = afterData.isSold === false;
     
     if (wasUnavailable && isNowAvailable) {
-      logger.info('Vehicle became available again:', event.params.vehicleId);
+      console.log('Vehicle became available again:', context.params?.vehicleId);
       
       const db = admin.firestore();
       
@@ -117,8 +118,8 @@ export const onVehicleUpdated = onDocumentUpdated(
           .get();
         
         if (usersSnapshot.empty) {
-          logger.info('No users to notify');
-          return null;
+          console.log('No users to notify');
+          return;
         }
         
         const fcmTokens: string[] = [];
@@ -130,8 +131,8 @@ export const onVehicleUpdated = onDocumentUpdated(
         });
         
         if (fcmTokens.length === 0) {
-          logger.info('No valid FCM tokens found');
-          return null;
+          console.log('No valid FCM tokens found');
+          return;
         }
         
         const make = afterData.make || '';
@@ -147,18 +148,16 @@ export const onVehicleUpdated = onDocumentUpdated(
           body,
           {
             type: 'vehicle_available',
-            vehicleId: event.params.vehicleId,
-            url: `/vehicules/${event.params.vehicleId}`,
+            vehicleId: context.params?.vehicleId || '',
+            url: `/vehicules/${context.params?.vehicleId}`,
           }
         );
         
-        logger.info('Vehicle availability notifications sent');
-        return null;
+        console.log('Vehicle availability notifications sent');
       } catch (error) {
         logger.error('Error sending vehicle availability notifications:', error);
         throw error;
       }
     }
-    
-    return null;
-  });
+  }
+);
