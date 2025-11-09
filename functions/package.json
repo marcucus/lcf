@@ -1,5 +1,13 @@
 {
   "name": "functions",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
   "description": "Cloud Functions for LCF Auto Performance",
   "scripts": {
     "build": "tsc",
@@ -7,6 +15,22 @@
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "test": "npm run build && npx ts-node src/tests/validateModification.test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Cloud Functions for LCF AUTO PERFORMANCE",
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^6.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
     "logs": "firebase functions:log"
   },
   "engines": {
