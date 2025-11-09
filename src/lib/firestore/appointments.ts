@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { Appointment, ServiceType, VehicleInfo } from '@/types';
+import { awardPointsForAppointment } from './loyalty';
 
 // Create a new appointment with transaction to prevent race conditions
 export async function createAppointment(
@@ -262,5 +263,38 @@ export async function getWeekAppointments(): Promise<Appointment[]> {
   } catch (error) {
     console.error('Error getting week appointments:', error);
     return [];
+  }
+}
+
+// Mark appointment as completed and award loyalty points
+export async function completeAppointment(appointmentId: string): Promise<void> {
+  if (!db) throw new Error('Firebase not configured');
+  
+  try {
+    // Get the appointment first
+    const appointmentRef = doc(db, 'appointments', appointmentId);
+    const appointmentSnap = await getDoc(appointmentRef);
+    
+    if (!appointmentSnap.exists()) {
+      throw new Error('Appointment not found');
+    }
+    
+    const appointment = appointmentSnap.data() as Appointment;
+    
+    // Update appointment status to completed
+    await updateDoc(appointmentRef, {
+      status: 'completed',
+    });
+    
+    // Award loyalty points
+    try {
+      await awardPointsForAppointment(appointment.userId, appointmentId);
+    } catch (error) {
+      console.error('Error awarding loyalty points:', error);
+      // Don't throw error here, appointment is already marked as completed
+    }
+  } catch (error) {
+    console.error('Error completing appointment:', error);
+    throw error;
   }
 }

@@ -13,4 +13,13 @@
   },
   "compileOnSave": true,
   "include": ["src"]
+    "forceConsistentCasingInFileNames": true
+  },
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

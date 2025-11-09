@@ -42,6 +42,29 @@ service cloud.firestore {
       
       // Regular users need more than 24 hours
       return diffInHours > 24;
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    function isAgendaManager() {
+      return hasRole('agendaManager');
+    }
+    
+    function isAdminOrManager() {
+      return isAdmin() || isAgendaManager();
     }
     
     // Users collection
@@ -51,6 +74,26 @@ service cloud.firestore {
       
       // Only admins can create, update, or delete users
       allow create, update, delete: if isAdmin();
+      // Users can read their own document
+      allow read: if isOwner(userId);
+      
+      // Users can create their own document on signup
+      allow create: if isSignedIn() && request.auth.uid == userId 
+                    && request.resource.data.role == 'user';
+      
+      // Users can update their own profile, notification preferences, and FCM token
+      allow update: if isOwner(userId) 
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+                    || isAdmin();
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+      
+      // Admins can read all users
+      allow read: if isAdmin();
+      
+      // Admins can update user roles
+      allow update: if isAdmin();
     }
     
     // Appointments collection
@@ -92,6 +135,35 @@ service cloud.firestore {
     // Vehicles collection (for vehicle sales)
     match /vehicles/{vehicleId} {
       // Anyone can read vehicles
+      // Users can read their own appointments
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdminOrManager()
+      );
+      
+      // Users can create appointments for themselves
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid
+        || isAdminOrManager()
+      );
+      
+      // Users can update/cancel their own appointments (24h rule enforced in client/functions)
+      // Admins and managers can update any appointment
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid
+        || isAdminOrManager()
+      );
+      
+      // Only admins and managers can delete appointments
+      allow delete: if isAdminOrManager();
+      
+      // Admins and managers can read all appointments
+      allow list: if isAdminOrManager();
+    }
+    
+    // Vehicles collection
+    match /vehicles/{vehicleId} {
+      // Everyone can read vehicles
       allow read: if true;
       
       // Only admins can create, update, or delete vehicles
@@ -110,6 +182,16 @@ service cloud.firestore {
     // Deny all other access by default
     match /{document=**} {
       allow read, write: if false;
+    // Response templates collection (for Google reviews)
+    match /responseTemplates/{templateId} {
+      // Only admins can read/write response templates
+      allow read, write: if isAdmin();
+    }
+    
+    // Google reviews collection (cached reviews)
+    match /googleReviews/{reviewId} {
+      // Only admins can read/write reviews
+      allow read, write: if isAdmin();
     }
   }
 }
