@@ -12,3 +12,12 @@ export {
 // Export all Cloud Functions
 export { sendAppointmentReminders } from './appointmentReminders';
 export { onVehicleCreated, onVehicleUpdated } from './vehicleNotifications';
+
+// Export OAuth functions
+export {
+  initiateOAuth,
+  handleOAuthCallback,
+  refreshOAuthToken,
+  disconnectOAuth,
+  autoRefreshTokens,
+} from './oauth/googleOAuth';

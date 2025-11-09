@@ -92,6 +92,20 @@ export interface ResponseTemplate {
   createdAt: Timestamp;
 }
 
+// Google OAuth configuration interface
+export interface GoogleOAuthConfig {
+  configId: string;
+  accessToken: string;
+  refreshToken: string;
+  tokenExpiresAt: Timestamp;
+  accountId?: string; // Google Business Profile account ID
+  locationId?: string; // Google Business Profile location ID
+  isConnected: boolean;
+  lastSync?: Timestamp;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 // Auth context interface
 export interface AuthContextType {
   user: User | null;
