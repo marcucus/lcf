@@ -100,11 +100,62 @@ export async function deleteResponseTemplate(templateId: string): Promise<void> 
 export async function getGoogleReviews(): Promise<GoogleReview[]> {
   try {
     // TODO: Replace with actual Cloud Function call
-    // This is a placeholder that returns mock data
+    // This is a placeholder that returns mock data for development
     console.warn('Using mock Google Reviews data. Implement Cloud Function for production.');
     
-    // Return empty array for now - will be implemented with Cloud Function
-    return [];
+    // Return mock data for testing
+    const mockReviews: GoogleReview[] = [
+      {
+        reviewId: 'review_1',
+        starRating: 5,
+        comment: 'Service excellent ! L\'équipe est très professionnelle et le travail est impeccable. Je recommande vivement LCF AUTO PERFORMANCE.',
+        reviewer: {
+          displayName: 'Jean Dupont',
+          profilePhotoUrl: undefined
+        },
+        createTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        updateTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewReply: {
+          comment: 'Merci beaucoup pour votre retour positif ! Nous sommes ravis que notre service vous ait satisfait.',
+          updateTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      },
+      {
+        reviewId: 'review_2',
+        starRating: 4,
+        comment: 'Bon garage, travail sérieux. Prix un peu élevé mais qualité au rendez-vous.',
+        reviewer: {
+          displayName: 'Marie Martin',
+          profilePhotoUrl: undefined
+        },
+        createTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+        updateTime: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        reviewId: 'review_3',
+        starRating: 5,
+        comment: 'Parfait ! Intervention rapide et efficace. Le personnel est très accueillant et prend le temps d\'expliquer.',
+        reviewer: {
+          displayName: 'Pierre Lefebvre',
+          profilePhotoUrl: undefined
+        },
+        createTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+        updateTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        reviewId: 'review_4',
+        starRating: 3,
+        comment: 'Service correct mais délai d\'attente un peu long. Travail bien fait sinon.',
+        reviewer: {
+          displayName: 'Sophie Bernard',
+          profilePhotoUrl: undefined
+        },
+        createTime: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
+        updateTime: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+    
+    return mockReviews;
   } catch (error) {
     console.error('Error getting Google reviews:', error);
     throw error;
