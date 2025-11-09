@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+import * as logger from 'firebase-functions/logger';
 import { sendNotification } from './notifications';
 
 /**
@@ -36,7 +37,7 @@ export const sendAppointmentReminders = onSchedule(
         return;
       }
       
-      console.log(`Found ${appointmentsSnapshot.size} appointments to remind`);
+      logger.info(`Found ${appointmentsSnapshot.size} appointments to remind`);
       
       // Process each appointment
       const promises = appointmentsSnapshot.docs.map(async (doc) => {
@@ -45,7 +46,7 @@ export const sendAppointmentReminders = onSchedule(
         
         // Check if reminder was already sent
         if (appointment.reminderSent) {
-          console.log(`Reminder already sent for appointment ${doc.id}`);
+          logger.info(`Reminder already sent for appointment ${doc.id}`);
           return;
         }
         
@@ -53,7 +54,7 @@ export const sendAppointmentReminders = onSchedule(
         const userDoc = await db.collection('users').doc(userId).get();
         
         if (!userDoc.exists) {
-          console.error(`User ${userId} not found`);
+          logger.error(`User ${userId} not found`);
           return;
         }
         
@@ -63,12 +64,12 @@ export const sendAppointmentReminders = onSchedule(
         
         // Check if user has notification enabled for appointment reminders
         if (!preferences?.appointmentReminders) {
-          console.log(`User ${userId} has disabled appointment reminders`);
+          logger.info(`User ${userId} has disabled appointment reminders`);
           return;
         }
         
         if (!fcmToken) {
-          console.log(`User ${userId} has no FCM token`);
+          logger.info(`User ${userId} has no FCM token`);
           return;
         }
         
@@ -112,9 +113,9 @@ export const sendAppointmentReminders = onSchedule(
             reminderSentAt: admin.firestore.FieldValue.serverTimestamp(),
           });
           
-          console.log(`Reminder sent for appointment ${doc.id}`);
+          logger.info(`Reminder sent for appointment ${doc.id}`);
         } catch (error) {
-          console.error(`Failed to send reminder for appointment ${doc.id}:`, error);
+          logger.error(`Failed to send reminder for appointment ${doc.id}:`, error);
         }
       });
       
@@ -122,7 +123,7 @@ export const sendAppointmentReminders = onSchedule(
       console.log('Appointment reminders processed successfully');
       
     } catch (error) {
-      console.error('Error processing appointment reminders:', error);
+      logger.error('Error processing appointment reminders:', error);
       throw error;
     }
   }

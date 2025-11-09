@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
+import * as logger from 'firebase-functions/logger';
 import { sendMulticastNotification } from './notifications';
 
 /**
@@ -17,7 +18,6 @@ export const onVehicleCreated = onDocumentCreated(
     const context = event;
     console.log('New vehicle created:', context.params?.vehicleId);
     
-    const vehicleData = snapshot.data();
     const db = admin.firestore();
     
     // Only send notifications for vehicles that are not sold
@@ -39,7 +39,7 @@ export const onVehicleCreated = onDocumentCreated(
         return;
       }
       
-      console.log(`Found ${usersSnapshot.size} users to notify`);
+      logger.info(`Found ${usersSnapshot.size} users to notify`);
       
       // Extract FCM tokens
       const fcmTokens: string[] = [];
@@ -78,7 +78,7 @@ export const onVehicleCreated = onDocumentCreated(
       
       console.log('New vehicle notifications sent successfully');
     } catch (error) {
-      console.error('Error sending new vehicle notifications:', error);
+      logger.error('Error sending new vehicle notifications:', error);
       throw error;
     }
   }
@@ -155,7 +155,7 @@ export const onVehicleUpdated = onDocumentUpdated(
         
         console.log('Vehicle availability notifications sent');
       } catch (error) {
-        console.error('Error sending vehicle availability notifications:', error);
+        logger.error('Error sending vehicle availability notifications:', error);
         throw error;
       }
     }
