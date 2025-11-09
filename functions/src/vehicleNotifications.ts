@@ -1,15 +1,21 @@
-import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { sendMulticastNotification } from './notifications';
 
 /**
  * Firestore trigger that runs when a new vehicle is created
  * Sends notifications to all users who have opted in to new vehicle alerts
  */
-export const onVehicleCreated = functions.firestore
-  .document('vehicles/{vehicleId}')
-  .onCreate(async (snapshot, context) => {
-    console.log('New vehicle created:', context.params.vehicleId);
+export const onVehicleCreated = onDocumentCreated(
+  'vehicles/{vehicleId}',
+  async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) {
+      console.log('No data associated with the event');
+      return;
+    }
+    const context = event;
+    console.log('New vehicle created:', context.params?.vehicleId);
     
     const vehicleData = snapshot.data();
     const db = admin.firestore();
@@ -17,7 +23,7 @@ export const onVehicleCreated = functions.firestore
     // Only send notifications for vehicles that are not sold
     if (vehicleData.isSold) {
       console.log('Vehicle is already sold, skipping notification');
-      return null;
+      return;
     }
     
     try {
@@ -30,7 +36,7 @@ export const onVehicleCreated = functions.firestore
       
       if (usersSnapshot.empty) {
         console.log('No users with new vehicle notifications enabled');
-        return null;
+        return;
       }
       
       console.log(`Found ${usersSnapshot.size} users to notify`);
@@ -46,7 +52,7 @@ export const onVehicleCreated = functions.firestore
       
       if (fcmTokens.length === 0) {
         console.log('No valid FCM tokens found');
-        return null;
+        return;
       }
       
       // Format notification message
@@ -65,26 +71,32 @@ export const onVehicleCreated = functions.firestore
         body,
         {
           type: 'new_vehicle',
-          vehicleId: context.params.vehicleId,
-          url: `/vehicules/${context.params.vehicleId}`,
+          vehicleId: context.params?.vehicleId || '',
+          url: `/vehicules/${context.params?.vehicleId}`,
         }
       );
       
       console.log('New vehicle notifications sent successfully');
-      return null;
     } catch (error) {
       console.error('Error sending new vehicle notifications:', error);
       throw error;
     }
-  });
+  }
+);
 
 /**
  * Firestore trigger that runs when a vehicle is updated
  * Can be used to notify when a vehicle price drops or becomes available
  */
-export const onVehicleUpdated = functions.firestore
-  .document('vehicles/{vehicleId}')
-  .onUpdate(async (change, context) => {
+export const onVehicleUpdated = onDocumentUpdated(
+  'vehicles/{vehicleId}',
+  async (event) => {
+    const change = event.data;
+    if (!change) {
+      console.log('No data associated with the event');
+      return;
+    }
+    const context = event;
     const beforeData = change.before.data();
     const afterData = change.after.data();
     
@@ -93,7 +105,7 @@ export const onVehicleUpdated = functions.firestore
     const isNowAvailable = afterData.isSold === false;
     
     if (wasUnavailable && isNowAvailable) {
-      console.log('Vehicle became available again:', context.params.vehicleId);
+      console.log('Vehicle became available again:', context.params?.vehicleId);
       
       const db = admin.firestore();
       
@@ -107,7 +119,7 @@ export const onVehicleUpdated = functions.firestore
         
         if (usersSnapshot.empty) {
           console.log('No users to notify');
-          return null;
+          return;
         }
         
         const fcmTokens: string[] = [];
@@ -120,7 +132,7 @@ export const onVehicleUpdated = functions.firestore
         
         if (fcmTokens.length === 0) {
           console.log('No valid FCM tokens found');
-          return null;
+          return;
         }
         
         const make = afterData.make || '';
@@ -136,18 +148,16 @@ export const onVehicleUpdated = functions.firestore
           body,
           {
             type: 'vehicle_available',
-            vehicleId: context.params.vehicleId,
-            url: `/vehicules/${context.params.vehicleId}`,
+            vehicleId: context.params?.vehicleId || '',
+            url: `/vehicules/${context.params?.vehicleId}`,
           }
         );
         
         console.log('Vehicle availability notifications sent');
-        return null;
       } catch (error) {
         console.error('Error sending vehicle availability notifications:', error);
         throw error;
       }
     }
-    
-    return null;
-  });
+  }
+);

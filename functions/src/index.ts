@@ -12,6 +12,8 @@ export {
 // Export all Cloud Functions
 export { sendAppointmentReminders } from './appointmentReminders';
 export { onVehicleCreated, onVehicleUpdated } from './vehicleNotifications';
+// Export admin notification functions
+export { onAppointmentCreated } from './adminNotifications';
 // Export Google Reviews functions
 export { getReviews } from './reviews/getReviews';
 

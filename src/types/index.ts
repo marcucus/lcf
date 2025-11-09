@@ -21,6 +21,7 @@ export interface NotificationPreferences {
   appointmentReminders: boolean;
   newVehicles: boolean;
   generalUpdates: boolean;
+  newAppointments?: boolean; // For admin/agendaManager to receive notifications of new appointments
 }
 
 // Service types

@@ -1,15 +1,17 @@
-import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { sendNotification } from './notifications';
 
 /**
  * Scheduled function that runs every hour to check for appointments
  * that need reminders (24 hours before the appointment)
  */
-export const sendAppointmentReminders = functions.pubsub
-  .schedule('every 1 hours')
-  .timeZone('Europe/Paris')
-  .onRun(async (context) => {
+export const sendAppointmentReminders = onSchedule(
+  {
+    schedule: 'every 1 hours',
+    timeZone: 'Europe/Paris',
+  },
+  async (event) => {
     console.log('Running appointment reminder check...');
     
     const db = admin.firestore();
@@ -31,7 +33,7 @@ export const sendAppointmentReminders = functions.pubsub
       
       if (appointmentsSnapshot.empty) {
         console.log('No appointments found needing reminders');
-        return null;
+        return;
       }
       
       console.log(`Found ${appointmentsSnapshot.size} appointments to remind`);
@@ -119,9 +121,9 @@ export const sendAppointmentReminders = functions.pubsub
       await Promise.all(promises);
       console.log('Appointment reminders processed successfully');
       
-      return null;
     } catch (error) {
       console.error('Error processing appointment reminders:', error);
       throw error;
     }
-  });
+  }
+);

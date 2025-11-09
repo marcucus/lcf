@@ -92,6 +92,7 @@ npm run deploy
 
 # Ou déployer individuellement
 firebase deploy --only functions:sendAppointmentReminders
+firebase deploy --only functions:onAppointmentCreated
 firebase deploy --only functions:onVehicleCreated
 firebase deploy --only functions:onVehicleUpdated
 ```
@@ -156,13 +157,20 @@ firebase functions:log --only sendAppointmentReminders
    - Envoyée 24h avant le rendez-vous
    - Contient : date, heure, type de service
    - Lien direct vers le dashboard
+   - Pour les clients uniquement
 
-2. **Nouveaux véhicules** (`newVehicles`)
+2. **Nouveaux rendez-vous** (`newAppointments`)
+   - Envoyée aux admins/gestionnaires lors de la création d'un nouveau rendez-vous
+   - Contient : nom du client, date, heure, type de service
+   - Lien direct vers le calendrier admin
+   - Pour les administrateurs et gestionnaires d'agenda uniquement
+
+3. **Nouveaux véhicules** (`newVehicles`)
    - Envoyée lors de l'ajout d'un véhicule
    - Contient : marque, modèle, année, prix
    - Lien direct vers la fiche du véhicule
 
-3. **Actualités générales** (`generalUpdates`)
+4. **Actualités générales** (`generalUpdates`)
    - Pour les promotions et actualités
    - À implémenter selon les besoins
 
@@ -172,6 +180,9 @@ Les utilisateurs peuvent :
 - Activer/désactiver les notifications globalement
 - Choisir les types de notifications à recevoir
 - Gérer les permissions du navigateur
+
+Les administrateurs et gestionnaires d'agenda ont également :
+- Option pour recevoir les notifications de nouveaux rendez-vous (`newAppointments`)
 
 ## Dépannage
 
