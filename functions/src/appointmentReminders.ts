@@ -1,16 +1,19 @@
-import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
+import * as logger from 'firebase-functions/logger';
 import { sendNotification } from './notifications';
 
 /**
  * Scheduled function that runs every hour to check for appointments
  * that need reminders (24 hours before the appointment)
  */
-export const sendAppointmentReminders = functions.pubsub
-  .schedule('every 1 hours')
-  .timeZone('Europe/Paris')
-  .onRun(async (context) => {
-    console.log('Running appointment reminder check...');
+export const sendAppointmentReminders = onSchedule(
+  {
+    schedule: 'every 1 hours',
+    timeZone: 'Europe/Paris',
+  },
+  async (event) => {
+    logger.info('Running appointment reminder check...');
     
     const db = admin.firestore();
     const now = new Date();
@@ -30,11 +33,11 @@ export const sendAppointmentReminders = functions.pubsub
         .get();
       
       if (appointmentsSnapshot.empty) {
-        console.log('No appointments found needing reminders');
-        return null;
+        logger.info('No appointments found needing reminders');
+        return;
       }
       
-      console.log(`Found ${appointmentsSnapshot.size} appointments to remind`);
+      logger.info(`Found ${appointmentsSnapshot.size} appointments to remind`);
       
       // Process each appointment
       const promises = appointmentsSnapshot.docs.map(async (doc) => {
@@ -43,7 +46,7 @@ export const sendAppointmentReminders = functions.pubsub
         
         // Check if reminder was already sent
         if (appointment.reminderSent) {
-          console.log(`Reminder already sent for appointment ${doc.id}`);
+          logger.info(`Reminder already sent for appointment ${doc.id}`);
           return;
         }
         
@@ -51,7 +54,7 @@ export const sendAppointmentReminders = functions.pubsub
         const userDoc = await db.collection('users').doc(userId).get();
         
         if (!userDoc.exists) {
-          console.error(`User ${userId} not found`);
+          logger.error(`User ${userId} not found`);
           return;
         }
         
@@ -61,12 +64,12 @@ export const sendAppointmentReminders = functions.pubsub
         
         // Check if user has notification enabled for appointment reminders
         if (!preferences?.appointmentReminders) {
-          console.log(`User ${userId} has disabled appointment reminders`);
+          logger.info(`User ${userId} has disabled appointment reminders`);
           return;
         }
         
         if (!fcmToken) {
-          console.log(`User ${userId} has no FCM token`);
+          logger.info(`User ${userId} has no FCM token`);
           return;
         }
         
@@ -110,18 +113,16 @@ export const sendAppointmentReminders = functions.pubsub
             reminderSentAt: admin.firestore.FieldValue.serverTimestamp(),
           });
           
-          console.log(`Reminder sent for appointment ${doc.id}`);
+          logger.info(`Reminder sent for appointment ${doc.id}`);
         } catch (error) {
-          console.error(`Failed to send reminder for appointment ${doc.id}:`, error);
+          logger.error(`Failed to send reminder for appointment ${doc.id}:`, error);
         }
       });
       
       await Promise.all(promises);
-      console.log('Appointment reminders processed successfully');
-      
-      return null;
+      logger.info('Appointment reminders processed successfully');
     } catch (error) {
-      console.error('Error processing appointment reminders:', error);
+      logger.error('Error processing appointment reminders:', error);
       throw error;
     }
   });
