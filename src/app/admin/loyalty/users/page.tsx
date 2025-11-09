@@ -288,7 +288,7 @@ function AdminUsersPointsContent() {
 
 export default function AdminUsersPointsPage() {
   return (
-    <ProtectedRoute requiredRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AdminUsersPointsContent />
     </ProtectedRoute>
   );
