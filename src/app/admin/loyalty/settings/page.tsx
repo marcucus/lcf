@@ -41,6 +41,10 @@ function AdminSettingsContent() {
     setSaving(true);
 
     try {
+      if (!db) {
+        throw new Error('Firebase non configuré');
+      }
+      
       // Create or update the settings document
       const settingsRef = doc(db, 'loyaltySettings', 'default');
       await setDoc(settingsRef, settings, { merge: true });
