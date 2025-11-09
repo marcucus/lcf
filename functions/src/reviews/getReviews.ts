@@ -4,7 +4,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
 /**
  * Interface representing a Google Business Profile Review
- * Based on Google My Business API v4.9
+ * Based on Google Business Profile API (Account Management API)
  */
 interface GoogleReview {
   reviewId: string;
@@ -186,8 +186,8 @@ async function getValidAccessToken(config: GoogleBusinessConfig): Promise<string
  * Fetches reviews from Google Business Profile API with pagination
  * 
  * @param accessToken - Valid OAuth 2.0 access token
- * @param accountId - Google Business account ID
- * @param locationId - Location ID
+ * @param accountId - Google Business account ID (not used in new API)
+ * @param locationId - Location ID in format: locations/{locationId}
  * @param pageSize - Number of reviews per page (max 50)
  * @param pageToken - Token for pagination
  * @returns Reviews and next page token
@@ -202,8 +202,10 @@ async function fetchReviewsFromApi(
   reviews: GoogleReview[];
   nextPageToken?: string;
 }> {
+  // Google Business Profile API (new API replacing My Business API v4)
+  // Endpoint format: https://mybusinessaccountmanagement.googleapis.com/v1/{location}/reviews
   const url = new URL(
-    `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews`
+    `https://mybusinessaccountmanagement.googleapis.com/v1/locations/${locationId}/reviews`
   );
   
   url.searchParams.append('pageSize', Math.min(pageSize, 50).toString());

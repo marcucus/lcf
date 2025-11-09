@@ -183,9 +183,9 @@ See `../tests/getReviews.test.ts` for comprehensive test scenarios covering:
 
 ## API Reference
 
-This function uses the Google My Business API v4.9:
-- Endpoint: `https://mybusiness.googleapis.com/v4/accounts/{accountId}/locations/{locationId}/reviews`
-- Documentation: https://developers.google.com/my-business/reference/rest/v4/accounts.locations.reviews/list
+This function uses the Google Business Profile API (formerly Google My Business API):
+- Endpoint: `https://mybusinessaccountmanagement.googleapis.com/v1/locations/{locationId}/reviews`
+- Documentation: https://developers.google.com/my-business/reference/accountmanagement/rest
 
 ## Performance
 
