@@ -14,6 +14,7 @@ import {
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/config';
 import { User, AuthContextType, UserRole } from '@/types';
+import { awardWelcomeBonus } from '@/lib/firestore/loyalty';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -80,9 +81,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       firstName,
       lastName,
       role: 'user',
+      loyaltyPoints: 0,
       createdAt: Timestamp.now(),
     };
     await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
+    
+    // Award welcome bonus
+    try {
+      await awardWelcomeBonus(userCredential.user.uid);
+    } catch (error) {
+      console.error('Error awarding welcome bonus:', error);
+    }
+    
     setUser(newUser);
   };
 
@@ -109,9 +119,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firstName: firstName || '',
         lastName: lastNameParts.join(' ') || '',
         role: 'user',
+        loyaltyPoints: 0,
         createdAt: Timestamp.now(),
       };
       await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
+      
+      // Award welcome bonus
+      try {
+        await awardWelcomeBonus(userCredential.user.uid);
+      } catch (error) {
+        console.error('Error awarding welcome bonus:', error);
+      }
+      
       setUser(newUser);
     }
   };
