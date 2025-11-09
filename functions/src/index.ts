@@ -9,6 +9,10 @@ export {
   onAppointmentDelete,
   validateAppointmentModification,
 } from './appointments/validateModification';
+
+// Export appointment confirmation function
+export { onAppointmentCreate } from './appointments/onAppointmentCreate';
+
 // Export all Cloud Functions
 export { sendAppointmentReminders } from './appointmentReminders';
 export { onVehicleCreated, onVehicleUpdated } from './vehicleNotifications';
