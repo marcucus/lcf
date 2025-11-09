@@ -2,6 +2,7 @@ import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getMessaging, Messaging, isSupported } from 'firebase/messaging';
 
 // Validate environment variables
 const requiredEnvVars = {
@@ -46,6 +47,7 @@ let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
 let storage: FirebaseStorage | null = null;
+let messaging: Messaging | null = null;
 
 // Check if we have real Firebase configuration (not placeholders)
 const hasRealConfig = missingVars.length === 0;
@@ -56,6 +58,21 @@ if (hasRealConfig) {
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
+    
+    // Initialize messaging only in browser environment
+    if (typeof window !== 'undefined') {
+      isSupported().then((supported) => {
+        if (supported) {
+          messaging = getMessaging(app!);
+          console.log('✅ Firebase Messaging initialized successfully');
+        } else {
+          console.warn('⚠️  Firebase Messaging not supported in this browser');
+        }
+      }).catch((error) => {
+        console.error('Error checking messaging support:', error);
+      });
+    }
+    
     console.log('✅ Firebase initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Firebase:', error);
@@ -64,5 +81,5 @@ if (hasRealConfig) {
   console.warn('⚠️  Firebase not configured - running in offline mode with sample data');
 }
 
-export { auth, db, storage };
+export { auth, db, storage, messaging };
 export default app;
