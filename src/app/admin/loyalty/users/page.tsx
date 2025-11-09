@@ -49,6 +49,11 @@ function AdminUsersPointsContent() {
 
   const loadUsers = async () => {
     try {
+      if (!db) {
+        console.error('Firebase non configuré');
+        return;
+      }
+      
       const usersRef = collection(db, 'users');
       const q = query(usersRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -288,7 +293,7 @@ function AdminUsersPointsContent() {
 
 export default function AdminUsersPointsPage() {
   return (
-    <ProtectedRoute requiredRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AdminUsersPointsContent />
     </ProtectedRoute>
   );

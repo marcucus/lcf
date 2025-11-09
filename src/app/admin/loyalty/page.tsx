@@ -221,7 +221,7 @@ function AdminLoyaltyContent() {
 
 export default function AdminLoyaltyPage() {
   return (
-    <ProtectedRoute requiredRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AdminLoyaltyContent />
     </ProtectedRoute>
   );

@@ -348,7 +348,7 @@ function AdminRewardsContent() {
 
 export default function AdminRewardsPage() {
   return (
-    <ProtectedRoute requiredRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AdminRewardsContent />
     </ProtectedRoute>
   );
