@@ -39,8 +39,8 @@ function ensureDb() {
  */
 export async function getUserLoyaltyPoints(userId: string): Promise<number> {
   try {
-    const firestore = ensureDb();
-    const userRef = doc(firestore, 'users', userId);
+    if (!db) throw new Error('Database not initialized');
+    const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
     
     if (userSnap.exists()) {
@@ -71,8 +71,9 @@ export async function awardLoyaltyPoints(
   createdBy?: string
 ): Promise<void> {
   try {
-    await runTransaction(ensureDb(), async (transaction) => {
-      const userRef = doc(ensureDb(), 'users', userId);
+    if (!db) throw new Error('Database not initialized');
+    await runTransaction(db, async (transaction) => {
+      const userRef = doc(db!, 'users', userId);
       const userDoc = await transaction.get(userRef);
       
       if (!userDoc.exists()) {
@@ -85,7 +86,7 @@ export async function awardLoyaltyPoints(
       });
 
       // Create transaction record
-      const transactionRef = doc(collection(ensureDb(), 'loyaltyTransactions'));
+      const transactionRef = doc(collection(db!, 'loyaltyTransactions'));
       const transactionData: Omit<LoyaltyTransaction, 'transactionId'> = {
         userId,
         type,
@@ -115,8 +116,9 @@ export async function deductLoyaltyPoints(
   description: string
 ): Promise<void> {
   try {
-    await runTransaction(ensureDb(), async (transaction) => {
-      const userRef = doc(ensureDb(), 'users', userId);
+    if (!db) throw new Error('Database not initialized');
+    await runTransaction(db, async (transaction) => {
+      const userRef = doc(db!, 'users', userId);
       const userDoc = await transaction.get(userRef);
       
       if (!userDoc.exists()) {
@@ -135,7 +137,7 @@ export async function deductLoyaltyPoints(
       });
 
       // Create transaction record
-      const transactionRef = doc(collection(ensureDb(), 'loyaltyTransactions'));
+      const transactionRef = doc(collection(db!, 'loyaltyTransactions'));
       const transactionData: Omit<LoyaltyTransaction, 'transactionId'> = {
         userId,
         type: 'reward_redemption',
@@ -161,7 +163,8 @@ export async function getUserLoyaltyTransactions(
   limitCount: number = 50
 ): Promise<LoyaltyTransaction[]> {
   try {
-    const transactionsRef = collection(ensureDb(), 'loyaltyTransactions');
+    if (!db) throw new Error('Database not initialized');
+    const transactionsRef = collection(db, 'loyaltyTransactions');
     const q = query(
       transactionsRef,
       where('userId', '==', userId),
@@ -189,7 +192,8 @@ export async function getUserLoyaltyTransactions(
  */
 export async function getActiveRewards(): Promise<Reward[]> {
   try {
-    const rewardsRef = collection(ensureDb(), 'rewards');
+    if (!db) throw new Error('Database not initialized');
+    const rewardsRef = collection(db, 'rewards');
     const q = query(
       rewardsRef,
       where('isActive', '==', true),
@@ -212,7 +216,8 @@ export async function getActiveRewards(): Promise<Reward[]> {
  */
 export async function getAllRewards(): Promise<Reward[]> {
   try {
-    const rewardsRef = collection(ensureDb(), 'rewards');
+    if (!db) throw new Error('Database not initialized');
+    const rewardsRef = collection(db, 'rewards');
     const q = query(rewardsRef, orderBy('createdAt', 'desc'));
     
     const querySnapshot = await getDocs(q);
@@ -231,7 +236,8 @@ export async function getAllRewards(): Promise<Reward[]> {
  */
 export async function getRewardById(rewardId: string): Promise<Reward | null> {
   try {
-    const rewardRef = doc(ensureDb(), 'rewards', rewardId);
+    if (!db) throw new Error('Database not initialized');
+    const rewardRef = doc(db, 'rewards', rewardId);
     const rewardSnap = await getDoc(rewardRef);
     
     if (rewardSnap.exists()) {
@@ -252,7 +258,8 @@ export async function getRewardById(rewardId: string): Promise<Reward | null> {
  */
 export async function createReward(rewardData: Omit<Reward, 'rewardId' | 'createdAt'>): Promise<string> {
   try {
-    const rewardsRef = collection(ensureDb(), 'rewards');
+    if (!db) throw new Error('Database not initialized');
+    const rewardsRef = collection(db, 'rewards');
     const docRef = await addDoc(rewardsRef, {
       ...rewardData,
       createdAt: Timestamp.now()
@@ -269,7 +276,8 @@ export async function createReward(rewardData: Omit<Reward, 'rewardId' | 'create
  */
 export async function updateReward(rewardId: string, updates: Partial<Reward>): Promise<void> {
   try {
-    const rewardRef = doc(ensureDb(), 'rewards', rewardId);
+    if (!db) throw new Error('Database not initialized');
+    const rewardRef = doc(db, 'rewards', rewardId);
     await updateDoc(rewardRef, updates);
   } catch (error) {
     console.error('Error updating reward:', error);
@@ -286,11 +294,12 @@ export async function updateReward(rewardId: string, updates: Partial<Reward>): 
  */
 export async function claimReward(userId: string, rewardId: string): Promise<string> {
   try {
+    if (!db) throw new Error('Database not initialized');
     let userRewardId: string = '';
     
     await runTransaction(ensureDb(), async (transaction) => {
       // Get reward details
-      const rewardRef = doc(ensureDb(), 'rewards', rewardId);
+      const rewardRef = doc(db!, 'rewards', rewardId);
       const rewardDoc = await transaction.get(rewardRef);
       
       if (!rewardDoc.exists()) {
@@ -308,7 +317,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
       }
       
       // Get user's current points
-      const userRef = doc(ensureDb(), 'users', userId);
+      const userRef = doc(db!, 'users', userId);
       const userDoc = await transaction.get(userRef);
       
       if (!userDoc.exists()) {
@@ -334,7 +343,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
       }
       
       // Create user reward record
-      const userRewardRef = doc(collection(ensureDb(), 'userRewards'));
+      const userRewardRef = doc(collection(db!, 'userRewards'));
       const userRewardData: Omit<UserReward, 'userRewardId'> = {
         userId,
         rewardId,
@@ -349,7 +358,7 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
       userRewardId = userRewardRef.id;
       
       // Create transaction record
-      const transactionRef = doc(collection(ensureDb(), 'loyaltyTransactions'));
+      const transactionRef = doc(collection(db!, 'loyaltyTransactions'));
       const transactionData: Omit<LoyaltyTransaction, 'transactionId'> = {
         userId,
         type: 'reward_redemption',
@@ -374,7 +383,8 @@ export async function claimReward(userId: string, rewardId: string): Promise<str
  */
 export async function getUserRewards(userId: string): Promise<UserReward[]> {
   try {
-    const userRewardsRef = collection(ensureDb(), 'userRewards');
+    if (!db) throw new Error('Database not initialized');
+    const userRewardsRef = collection(db, 'userRewards');
     const q = query(
       userRewardsRef,
       where('userId', '==', userId),
@@ -397,7 +407,8 @@ export async function getUserRewards(userId: string): Promise<UserReward[]> {
  */
 export async function markRewardAsUsed(userRewardId: string): Promise<void> {
   try {
-    const userRewardRef = doc(ensureDb(), 'userRewards', userRewardId);
+    if (!db) throw new Error('Database not initialized');
+    const userRewardRef = doc(db, 'userRewards', userRewardId);
     await updateDoc(userRewardRef, {
       status: 'used',
       usedAt: Timestamp.now()
@@ -417,7 +428,8 @@ export async function markRewardAsUsed(userRewardId: string): Promise<void> {
  */
 export async function getLoyaltySettings(): Promise<LoyaltySettings> {
   try {
-    const settingsRef = doc(ensureDb(), 'loyaltySettings', 'default');
+    if (!db) throw new Error('Database not initialized');
+    const settingsRef = doc(db, 'loyaltySettings', 'default');
     const settingsSnap = await getDoc(settingsRef);
     
     if (settingsSnap.exists()) {
@@ -441,7 +453,8 @@ export async function getLoyaltySettings(): Promise<LoyaltySettings> {
  */
 export async function updateLoyaltySettings(settings: Partial<LoyaltySettings>): Promise<void> {
   try {
-    const settingsRef = doc(ensureDb(), 'loyaltySettings', 'default');
+    if (!db) throw new Error('Database not initialized');
+    const settingsRef = doc(db, 'loyaltySettings', 'default');
     await updateDoc(settingsRef, settings);
   } catch (error) {
     console.error('Error updating loyalty settings:', error);

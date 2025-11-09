@@ -273,12 +273,13 @@ function AdminRewardsContent() {
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value as RewardCategory })}
                       required
-                    >
-                      <option value="discount">Réduction</option>
-                      <option value="service">Service</option>
-                      <option value="product">Produit</option>
-                      <option value="special">Spécial</option>
-                    </Select>
+                      options={[
+                        { value: 'discount', label: 'Réduction' },
+                        { value: 'service', label: 'Service' },
+                        { value: 'product', label: 'Produit' },
+                        { value: 'special', label: 'Spécial' }
+                      ]}
+                    />
                   </div>
 
                   <div>
