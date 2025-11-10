@@ -30,3 +30,6 @@ export {
   disconnectOAuth,
   autoRefreshTokens,
 } from './oauth/googleOAuth';
+
+// Export invoice functions
+export { sendInvoiceEmail } from './invoices/sendInvoiceEmail';

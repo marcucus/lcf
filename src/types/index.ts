@@ -182,3 +182,65 @@ export interface LoyaltySettings {
   referralBonusPoints?: number;
   minPointsForRedemption: number;
 }
+
+// Invoice and Quote types
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'cancelled' | 'overdue';
+export type InvoiceOrigin = 'appointment' | 'quote' | 'user' | 'manual';
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+
+export interface InvoiceItem {
+  itemId: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number; // Percentage (e.g., 20 for 20%)
+  total: number; // quantity * unitPrice
+  totalWithTax: number; // total * (1 + taxRate/100)
+}
+
+export interface Quote {
+  quoteId: string;
+  quoteNumber: string; // Human-readable quote number (e.g., "DEV-2024-001")
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  items: InvoiceItem[];
+  subtotal: number; // Sum of all item totals
+  taxAmount: number; // Sum of all taxes
+  total: number; // Subtotal + taxAmount
+  status: QuoteStatus;
+  validUntil?: Timestamp;
+  notes?: string;
+  relatedAppointmentId?: string;
+  createdBy: string; // Admin UID who created the quote
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  linkedInvoiceId?: string; // If converted to invoice
+}
+
+export interface Invoice {
+  invoiceId: string;
+  invoiceNumber: string; // Human-readable invoice number (e.g., "FACT-2024-001")
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  items: InvoiceItem[];
+  subtotal: number; // Sum of all item totals
+  taxAmount: number; // Sum of all taxes
+  total: number; // Subtotal + taxAmount
+  status: InvoiceStatus;
+  origin: InvoiceOrigin;
+  relatedAppointmentId?: string; // If created from appointment
+  relatedQuoteId?: string; // If created from quote
+  dueDate?: Timestamp;
+  paidDate?: Timestamp;
+  notes?: string;
+  createdBy: string; // Admin UID who created the invoice
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  sentAt?: Timestamp; // When the invoice was sent by email
+}
