@@ -7,6 +7,7 @@
 
 :root {
   --accent: #1CCEFF;
+  --accent-dark: #0E677F; /* WCAG AA compliant variant for light backgrounds */
   --background: #FFFFFF;
   --background-secondary: #F8F9FA;
   --foreground: #212529;
@@ -14,6 +15,7 @@
 }
 
 .dark {
+  --accent-dark: #1CCEFF; /* Use bright variant in dark mode */
   --background: #121212;
   --background-secondary: #1E1E1E;
   --foreground: #EAEAEA;
@@ -70,6 +72,19 @@ body {
 }
 
 @layer components {
+  /* Accessible accent color that adapts based on background */
+  .text-accent-safe {
+    @apply text-accent-dark dark:text-accent;
+  }
+
+  .border-accent-safe {
+    @apply border-accent-dark dark:border-accent;
+  }
+
+  .hover\:text-accent-safe:hover {
+    @apply hover:text-accent-dark dark:hover:text-accent;
+  }
+
   .btn-primary {
     @apply bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl;
   }
