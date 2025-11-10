@@ -149,33 +149,41 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
 
       const { subtotal, taxAmount, total } = calculateTotals();
       const validUntilDate = new Date(formData.validUntil);
-      
-      // Calculate average tax rate from items
-      const avgTaxRate = items.length > 0 
-        ? items.reduce((sum, item) => sum + item.taxRate, 0) / items.length / 100
-        : 0.20; // default 20%
-
-      const quoteData = {
-        userId: formData.userId || 'guest',
-        customerName: formData.customerName,
-        customerEmail: formData.customerEmail,
-        customerPhone: formData.customerPhone,
-        customerAddress: formData.customerAddress,
-        items,
-        subtotal,
-        taxRate: avgTaxRate,
-        taxAmount,
-        total,
-        status: formData.status,
-        validUntil: Timestamp.fromDate(validUntilDate),
-        notes: formData.notes,
-        createdBy: user?.uid || '',
-      };
 
       if (quote) {
-        await updateQuote(quote.quoteId, quoteData);
+        // Calculate average tax rate from items
+        const avgTaxRate = items.length > 0 
+          ? items.reduce((sum, item) => sum + item.taxRate, 0) / items.length / 100
+          : 0.20; // default 20%
+        
+        await updateQuote(quote.quoteId, {
+          userId: formData.userId || 'guest',
+          customerName: formData.customerName,
+          customerEmail: formData.customerEmail,
+          customerPhone: formData.customerPhone,
+          customerAddress: formData.customerAddress,
+          items,
+          subtotal,
+          taxRate: avgTaxRate,
+          taxAmount,
+          total,
+          status: formData.status,
+          validUntil: Timestamp.fromDate(validUntilDate),
+          notes: formData.notes,
+        });
       } else {
-        await createQuote(quoteData);
+        await createQuote(
+          user?.uid || '',
+          formData.userId || 'guest',
+          formData.customerName,
+          formData.customerEmail,
+          items,
+          formData.status,
+          formData.customerPhone,
+          formData.customerAddress,
+          validUntilDate,
+          formData.notes
+        );
       }
 
       onSuccess();
