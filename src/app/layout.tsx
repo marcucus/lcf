@@ -23,6 +23,12 @@ export const metadata: Metadata = {
     icon: "/icons/icon-72x72.png",
     apple: "/icons/icon-192x192.png",
   },
+  openGraph: {
+    title: "LCF Auto Performance",
+    description: "Garage automobile - Entretien, Réparation, Re-programmation",
+    type: "website",
+    locale: "fr_FR",
+  },
 };
 
 export const viewport: Viewport = {
