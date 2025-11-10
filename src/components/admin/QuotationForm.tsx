@@ -47,7 +47,7 @@ export function QuotationForm({
       clientAddress: '',
       userId: '',
       appointmentId: '',
-      items: [{ description: '', quantity: 1, unitPrice: 0, taxRate: 20, total: 0 }],
+      items: [{ itemId: '', description: '', quantity: 1, unitPrice: 0, taxRate: 20, total: 0, totalWithTax: 0 }],
       notes: '',
       internalNotes: '',
       validUntil: '',
@@ -90,7 +90,7 @@ export function QuotationForm({
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { description: '', quantity: 1, unitPrice: 0, taxRate: 20, total: 0 }],
+      items: [...formData.items, { itemId: '', description: '', quantity: 1, unitPrice: 0, taxRate: 20, total: 0, totalWithTax: 0 }],
     });
   };
 

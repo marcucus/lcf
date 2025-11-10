@@ -89,12 +89,14 @@ export function InvoiceDetails({
                 {new Date(invoice.createdAt.toDate()).toLocaleDateString('fr-FR')}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Date d'échéance</p>
-              <p className="text-gray-900 dark:text-white font-medium">
-                {new Date(invoice.dueDate.toDate()).toLocaleDateString('fr-FR')}
-              </p>
-            </div>
+            {invoice.dueDate && (
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Date d'échéance</p>
+                <p className="text-gray-900 dark:text-white font-medium">
+                  {new Date(invoice.dueDate.toDate()).toLocaleDateString('fr-FR')}
+                </p>
+              </div>
+            )}
             {invoice.sentAt && (
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Date d'envoi</p>
@@ -103,11 +105,11 @@ export function InvoiceDetails({
                 </p>
               </div>
             )}
-            {invoice.paidAt && (
+            {invoice.paidDate && (
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Date de paiement</p>
                 <p className="text-gray-900 dark:text-white font-medium">
-                  {new Date(invoice.paidAt.toDate()).toLocaleDateString('fr-FR')}
+                  {new Date(invoice.paidDate.toDate()).toLocaleDateString('fr-FR')}
                 </p>
               </div>
             )}
@@ -137,7 +139,7 @@ export function InvoiceDetails({
                       {item.unitPrice.toFixed(2)} €
                     </td>
                     <td className="py-3 px-2 text-right text-gray-900 dark:text-white font-medium">
-                      {item.totalPrice.toFixed(2)} €
+                      {item.total.toFixed(2)} €
                     </td>
                   </tr>
                 ))}
@@ -151,7 +153,7 @@ export function InvoiceDetails({
               <span>{invoice.subtotal.toFixed(2)} €</span>
             </div>
             <div className="flex justify-between text-gray-700 dark:text-gray-300">
-              <span>TVA ({(invoice.taxRate * 100).toFixed(0)}%):</span>
+              <span>TVA:</span>
               <span>{invoice.taxAmount.toFixed(2)} €</span>
             </div>
             <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white border-t border-gray-300 dark:border-gray-700 pt-2">

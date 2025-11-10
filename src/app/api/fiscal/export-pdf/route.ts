@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
     const invoices = await getPaidInvoicesByDateRange(start, end);
 
     // Calculate totals
-    const totalHT = invoices.reduce((sum, inv) => sum + inv.totalHT, 0);
-    const totalTVA = invoices.reduce((sum, inv) => sum + inv.totalTVA, 0);
-    const totalTTC = invoices.reduce((sum, inv) => sum + inv.totalTTC, 0);
+    const totalHT = invoices.reduce((sum, inv) => sum + inv.subtotal, 0);
+    const totalTVA = invoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
+    const totalTTC = invoices.reduce((sum, inv) => sum + inv.total, 0);
 
     // Generate HTML content
     const htmlContent = `
@@ -150,12 +150,12 @@ export async function POST(request: NextRequest) {
       ${invoices.map(invoice => `
         <tr>
           <td>${invoice.invoiceNumber}</td>
-          <td>${invoice.paymentDate ? invoice.paymentDate.toDate().toLocaleDateString('fr-FR') : '-'}</td>
+          <td>${invoice.paidDate ? invoice.paidDate.toDate().toLocaleDateString('fr-FR') : '-'}</td>
           <td>${invoice.customerName}</td>
-          <td class="text-right">${invoice.totalHT.toFixed(2)} €</td>
-          <td class="text-right">${invoice.totalTVA.toFixed(2)} €</td>
-          <td class="text-right">${invoice.totalTTC.toFixed(2)} €</td>
-          <td>${invoice.paymentMethod || '-'}</td>
+          <td class="text-right">${invoice.subtotal.toFixed(2)} €</td>
+          <td class="text-right">${invoice.taxAmount.toFixed(2)} €</td>
+          <td class="text-right">${invoice.total.toFixed(2)} €</td>
+          <td>-</td>
         </tr>
       `).join('')}
     </tbody>

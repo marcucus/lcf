@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const invoices = await getPaidInvoicesByDateRange(start, end);
 
     // Calculate totals
-    const totalRevenue = invoices.reduce((sum, inv) => sum + inv.totalTTC, 0);
+    const totalRevenue = invoices.reduce((sum, inv) => sum + inv.total, 0);
 
     // Generate CSV content
     const csvHeader = [
@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
     ].join(';');
 
     const csvRows = invoices.map(invoice => {
-      const issueDate = invoice.issueDate.toDate().toLocaleDateString('fr-FR');
-      const paymentDate = invoice.paymentDate 
-        ? invoice.paymentDate.toDate().toLocaleDateString('fr-FR')
+      const issueDate = invoice.createdAt.toDate().toLocaleDateString('fr-FR');
+      const paymentDate = invoice.paidDate 
+        ? invoice.paidDate.toDate().toLocaleDateString('fr-FR')
         : '';
       
       return [
@@ -48,10 +48,10 @@ export async function POST(request: NextRequest) {
         issueDate,
         paymentDate,
         invoice.customerName,
-        invoice.totalHT.toFixed(2),
-        invoice.totalTVA.toFixed(2),
-        invoice.totalTTC.toFixed(2),
-        invoice.paymentMethod || '',
+        invoice.subtotal.toFixed(2),
+        invoice.taxAmount.toFixed(2),
+        invoice.total.toFixed(2),
+        '', // paymentMethod not in Invoice interface
         invoice.status,
         (invoice.notes || '').replace(/;/g, ',') // Replace semicolons to avoid CSV issues
       ].join(';');
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
       '',
       '',
       `${invoices.length} factures`,
-      invoices.reduce((sum, inv) => sum + inv.totalHT, 0).toFixed(2),
-      invoices.reduce((sum, inv) => sum + inv.totalTVA, 0).toFixed(2),
+      invoices.reduce((sum, inv) => sum + inv.subtotal, 0).toFixed(2),
+      invoices.reduce((sum, inv) => sum + inv.taxAmount, 0).toFixed(2),
       totalRevenue.toFixed(2),
       '',
       '',

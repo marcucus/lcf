@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { Quote, QuoteLineItem, User } from '@/types';
+import { Quote, InvoiceItem, User } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
@@ -31,7 +31,6 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
     customerEmail: string;
     customerPhone: string;
     customerAddress: string;
-    taxRate: number;
     validUntil: string;
     notes: string;
     status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
@@ -41,14 +40,13 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
     customerEmail: '',
     customerPhone: '',
     customerAddress: '',
-    taxRate: 0.20, // 20% TVA by default
     validUntil: '',
     notes: '',
     status: 'draft',
   });
 
-  const [items, setItems] = useState<QuoteLineItem[]>([
-    { description: '', quantity: 1, unitPrice: 0, totalPrice: 0 },
+  const [items, setItems] = useState<InvoiceItem[]>([
+    { itemId: '', description: '', quantity: 1, unitPrice: 0, taxRate: 20, total: 0, totalWithTax: 0 },
   ]);
 
   useEffect(() => {
@@ -63,7 +61,6 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
         customerEmail: quote.customerEmail,
         customerPhone: quote.customerPhone || '',
         customerAddress: quote.customerAddress || '',
-        taxRate: quote.taxRate,
         validUntil: new Date(quote.validUntil.toDate()).toISOString().split('T')[0],
         notes: quote.notes || '',
         status: quote.status,
@@ -102,14 +99,14 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
   };
 
   const handleAddItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0, totalPrice: 0 }]);
+    setItems([...items, { itemId: '', description: '', quantity: 1, unitPrice: 0, taxRate: 20, total: 0, totalWithTax: 0 }]);
   };
 
   const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const handleItemChange = (index: number, field: keyof QuoteLineItem, value: string | number) => {
+  const handleItemChange = (index: number, field: keyof InvoiceItem, value: string | number) => {
     const newItems = [...items];
     newItems[index] = {
       ...newItems[index],
@@ -117,14 +114,16 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
     };
     
     // Recalculate total for this item
-    newItems[index].totalPrice = newItems[index].quantity * newItems[index].unitPrice;
+    const itemTotal = newItems[index].quantity * newItems[index].unitPrice;
+    newItems[index].total = itemTotal;
+    newItems[index].totalWithTax = itemTotal * (1 + newItems[index].taxRate / 100);
     
     setItems(newItems);
   };
 
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
-    const taxAmount = subtotal * formData.taxRate;
+    const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+    const taxAmount = items.reduce((sum, item) => sum + (item.total * item.taxRate / 100), 0);
     const total = subtotal + taxAmount;
     return { subtotal, taxAmount, total };
   };
@@ -150,6 +149,11 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
 
       const { subtotal, taxAmount, total } = calculateTotals();
       const validUntilDate = new Date(formData.validUntil);
+      
+      // Calculate average tax rate from items
+      const avgTaxRate = items.length > 0 
+        ? items.reduce((sum, item) => sum + item.taxRate, 0) / items.length / 100
+        : 0.20; // default 20%
 
       const quoteData = {
         userId: formData.userId || 'guest',
@@ -159,7 +163,7 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
         customerAddress: formData.customerAddress,
         items,
         subtotal,
-        taxRate: formData.taxRate,
+        taxRate: avgTaxRate,
         taxAmount,
         total,
         status: formData.status,
@@ -319,7 +323,7 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
                   />
                 </div>
                 <div className="mt-2 text-right text-gray-900 dark:text-white font-medium">
-                  Total: {item.totalPrice.toFixed(2)} €
+                  Total: {item.total.toFixed(2)} €
                 </div>
               </div>
             ))}
@@ -336,7 +340,7 @@ export function QuoteForm({ quote, onCancel, onSuccess }: QuoteFormProps) {
               <span>{subtotal.toFixed(2)} €</span>
             </div>
             <div className="flex justify-between text-gray-700 dark:text-gray-300">
-              <span>TVA ({(formData.taxRate * 100).toFixed(0)}%):</span>
+              <span>TVA:</span>
               <span>{taxAmount.toFixed(2)} €</span>
             </div>
             <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white">
