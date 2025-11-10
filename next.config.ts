@@ -4,6 +4,7 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  turbopack: {},
   webpack: (config) => {
     return config;
   },

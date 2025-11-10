@@ -127,7 +127,7 @@ function DashboardContent() {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {pastAppointments.length}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Rendez-vous passés</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Rendez-vous passés ou annulés</p>
               </div>
             </div>
           </Card>
@@ -237,7 +237,7 @@ function DashboardContent() {
         </div>
 
         {/* Notification Settings Section */}
-        <div className="mb-6">
+        <div className="pt-6">
           <NotificationSettings userId={user?.uid || ''} />
         </div>
       </div>
