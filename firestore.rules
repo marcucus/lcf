@@ -115,5 +115,45 @@ service cloud.firestore {
       // Only admins can read/write reviews
       allow read, write: if isAdmin();
     }
+    
+    // Invoices collection
+    match /invoices/{invoiceId} {
+      // Only admins can read invoices
+      allow read: if isAdmin();
+      
+      // Only admins can create invoices
+      allow create: if isAdmin() 
+                    && request.resource.data.createdBy == request.auth.uid;
+      
+      // Only admins can update invoices
+      allow update: if isAdmin();
+      
+      // Only admins can delete invoices
+      allow delete: if isAdmin();
+    }
+    
+    // User vehicles collection (for storing customer vehicle info)
+    match /userVehicles/{vehicleId} {
+      // Users can read their own vehicles
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdminOrManager()
+      );
+      
+      // Users can create their own vehicle records
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid
+        || isAdminOrManager()
+      );
+      
+      // Users can update their own vehicles
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid
+        || isAdminOrManager()
+      );
+      
+      // Admins can read all user vehicles
+      allow list: if isAdminOrManager();
+    }
   }
 }
