@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { VehicleGrid } from '@/components/admin/VehicleGrid';
+import { Vehicle } from '@/types';
+import { getVehiclesForSale } from '@/lib/firestore/vehicles';
 import { 
   FiTool, 
   FiSettings, 
@@ -20,6 +23,10 @@ import {
 } from 'react-icons/fi';
 
 export default function Home() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
+  const [vehiclesError, setVehiclesError] = useState<string | null>(null);
+
   // Scroll animation observer
   useEffect(() => {
     const observerOptions = {
@@ -41,6 +48,25 @@ export default function Home() {
     return () => {
       animatedElements.forEach((el) => observer.unobserve(el));
     };
+  }, []);
+
+  // Fetch vehicles for sale
+  useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        setLoadingVehicles(true);
+        setVehiclesError(null);
+        const data = await getVehiclesForSale();
+        setVehicles(data);
+      } catch (error) {
+        console.error('Error loading vehicles:', error);
+        setVehiclesError('Impossible de charger les véhicules');
+      } finally {
+        setLoadingVehicles(false);
+      }
+    };
+
+    loadVehicles();
   }, []);
 
   const services = [
@@ -258,7 +284,7 @@ export default function Home() {
       {/* Vehicles Section */}
       <section id="vehicules" className="py-24 bg-white dark:bg-dark-bg scroll-mt-16">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12 animate-on-scroll">
               <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                 Véhicules d&apos;occasion
@@ -268,18 +294,42 @@ export default function Home() {
               </p>
             </div>
 
-            <Card className="animate-on-scroll">
-              <div className="text-center py-16">
-                <div className="text-7xl mb-8 animate-bounce-slow">🚗</div>
-                <h3 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
-                  Catalogue en préparation
-                </h3>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-                  Notre catalogue de véhicules d&apos;occasion sera bientôt disponible. 
-                  Nous sélectionnons pour vous les meilleures opportunités.
+            {loadingVehicles ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                  Chargement des véhicules...
                 </p>
               </div>
-            </Card>
+            ) : vehiclesError ? (
+              <Card className="animate-on-scroll">
+                <div className="text-center py-16">
+                  <div className="text-7xl mb-8">⚠️</div>
+                  <h3 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+                    Erreur de chargement
+                  </h3>
+                  <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+                    {vehiclesError}. Veuillez réessayer plus tard.
+                  </p>
+                </div>
+              </Card>
+            ) : vehicles.length === 0 ? (
+              <Card className="animate-on-scroll">
+                <div className="text-center py-16">
+                  <div className="text-7xl mb-8 animate-bounce-slow">🚗</div>
+                  <h3 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+                    Aucun véhicule disponible
+                  </h3>
+                  <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+                    Notre catalogue de véhicules d&apos;occasion sera bientôt disponible. 
+                    Nous sélectionnons pour vous les meilleures opportunités.
+                  </p>
+                </div>
+              </Card>
+            ) : (
+              <div className="animate-on-scroll mb-12">
+                <VehicleGrid vehicles={vehicles} isAdmin={false} />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
               {[
