@@ -414,6 +414,7 @@ export default function Home() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 title="LCF Auto Performance Location"
+                aria-label="Google Maps location of LCF Auto Performance"
               />
             </div>
           </div>

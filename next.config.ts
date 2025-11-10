@@ -8,6 +8,21 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     return config;
   },
+  // Performance optimizations
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+  },
+  // Compression
+  compress: true,
+  // Production optimizations
+  productionBrowserSourceMaps: false,
+  // Optimize CSS
+  experimental: {
+    optimizeCss: true,
+  },
 };
 
 export default withPWA({
@@ -15,14 +30,16 @@ export default withPWA({
   disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: true,
+  // Enhanced caching strategies for better performance
   runtimeCaching: [
+    // Google Fonts - Cache First for long-term storage
     {
       urlPattern: /^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,
       handler: "CacheFirst",
       options: {
         cacheName: "google-fonts-webfonts",
         expiration: {
-          maxEntries: 4,
+          maxEntries: 10,
           maxAgeSeconds: 365 * 24 * 60 * 60, // 365 days
         },
       },
@@ -33,44 +50,59 @@ export default withPWA({
       options: {
         cacheName: "google-fonts-stylesheets",
         expiration: {
-          maxEntries: 4,
+          maxEntries: 10,
           maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
         },
       },
     },
+    // Font files
     {
       urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: "static-font-assets",
         expiration: {
-          maxEntries: 4,
+          maxEntries: 10,
           maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
         },
       },
     },
+    // Static images - Prioritize WebP with longer cache
     {
-      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
+      urlPattern: /\.(?:webp|avif)$/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "modern-image-assets",
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico)$/i,
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: "static-image-assets",
         expiration: {
           maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
         },
       },
     },
+    // Next.js optimized images - Cache First for better performance
     {
       urlPattern: /\/_next\/image\?url=.+$/i,
-      handler: "StaleWhileRevalidate",
+      handler: "CacheFirst",
       options: {
         cacheName: "next-image",
         expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+          maxEntries: 100,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
       },
     },
+    // Audio files
     {
       urlPattern: /\.(?:mp3|wav|ogg)$/i,
       handler: "CacheFirst",
@@ -83,6 +115,7 @@ export default withPWA({
         },
       },
     },
+    // Video files
     {
       urlPattern: /\.(?:mp4)$/i,
       handler: "CacheFirst",
@@ -95,39 +128,44 @@ export default withPWA({
         },
       },
     },
+    // JavaScript assets - StaleWhileRevalidate for balance
     {
       urlPattern: /\.(?:js)$/i,
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: "static-js-assets",
         expiration: {
-          maxEntries: 32,
+          maxEntries: 50,
           maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
       },
     },
+    // CSS assets - StaleWhileRevalidate for fresh styles
     {
       urlPattern: /\.(?:css|less)$/i,
       handler: "StaleWhileRevalidate",
       options: {
         cacheName: "static-style-assets",
         expiration: {
-          maxEntries: 32,
+          maxEntries: 50,
           maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
       },
     },
+    // Next.js data files - NetworkFirst for fresh data
     {
       urlPattern: /\/_next\/data\/.+\/.+\.json$/i,
-      handler: "StaleWhileRevalidate",
+      handler: "NetworkFirst",
       options: {
         cacheName: "next-data",
         expiration: {
           maxEntries: 32,
           maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
+        networkTimeoutSeconds: 10,
       },
     },
+    // Static data files - NetworkFirst for fresh content
     {
       urlPattern: /\.(?:json|xml|csv)$/i,
       handler: "NetworkFirst",
@@ -137,8 +175,10 @@ export default withPWA({
           maxEntries: 32,
           maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
+        networkTimeoutSeconds: 10,
       },
     },
+    // Same-origin pages - NetworkFirst with fallback
     {
       urlPattern: ({ url }: { url: URL }) => {
         const isSameOrigin = self.origin === url.origin;
@@ -150,9 +190,9 @@ export default withPWA({
       },
       handler: "NetworkFirst",
       options: {
-        cacheName: "others",
+        cacheName: "pages",
         expiration: {
-          maxEntries: 32,
+          maxEntries: 50,
           maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
         networkTimeoutSeconds: 10,
