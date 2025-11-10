@@ -492,3 +492,46 @@ export async function searchInvoices(searchTerm: string): Promise<Invoice[]> {
 
   return uniqueInvoices;
 }
+
+/**
+ * Get all invoices (for admin purposes)
+ */
+export async function getAllInvoices(): Promise<Invoice[]> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const invoicesRef = collection(db, 'invoices');
+  const q = query(invoicesRef, orderBy('createdAt', 'desc'));
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    invoiceId: doc.id,
+    ...doc.data(),
+  } as Invoice));
+}
+
+/**
+ * Get paid invoices within a date range (for fiscal declarations)
+ */
+export async function getPaidInvoicesByDateRange(
+  startDate: Date,
+  endDate: Date
+): Promise<Invoice[]> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const invoicesRef = collection(db, 'invoices');
+  const q = query(
+    invoicesRef,
+    where('status', '==', 'paid'),
+    where('paidDate', '>=', Timestamp.fromDate(startDate)),
+    where('paidDate', '<=', Timestamp.fromDate(endDate)),
+    orderBy('paidDate', 'asc')
+  );
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    invoiceId: doc.id,
+    ...doc.data(),
+  } as Invoice));
+}

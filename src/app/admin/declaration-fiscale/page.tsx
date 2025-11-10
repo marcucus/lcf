@@ -115,9 +115,9 @@ export default function FiscalDeclarationPage() {
     }
   };
 
-  const totalRevenue = invoices.reduce((sum, inv) => sum + inv.totalTTC, 0);
-  const totalHT = invoices.reduce((sum, inv) => sum + inv.totalHT, 0);
-  const totalTVA = invoices.reduce((sum, inv) => sum + inv.totalTVA, 0);
+  const totalRevenue = invoices.reduce((sum, inv) => sum + inv.total, 0);
+  const totalHT = invoices.reduce((sum, inv) => sum + inv.subtotal, 0);
+  const totalTVA = invoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
 
   if (loading) {
     return (
@@ -238,10 +238,10 @@ export default function FiscalDeclarationPage() {
                         Montant TTC
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Paiement
+                        Notes
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Pièces
+                        Détails
                       </th>
                     </tr>
                   </thead>
@@ -252,38 +252,34 @@ export default function FiscalDeclarationPage() {
                           {invoice.invoiceNumber}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
-                          {invoice.paymentDate?.toDate().toLocaleDateString('fr-FR')}
+                          {invoice.paidDate?.toDate().toLocaleDateString('fr-FR')}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
                           {invoice.customerName}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
-                          {invoice.totalHT.toFixed(2)} €
+                          {invoice.subtotal.toFixed(2)} €
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
-                          {invoice.totalTVA.toFixed(2)} €
+                          {invoice.taxAmount.toFixed(2)} €
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                          {invoice.totalTTC.toFixed(2)} €
+                          {invoice.total.toFixed(2)} €
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
-                          {invoice.paymentMethod || '-'}
+                          {invoice.notes || '-'}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
-                          {invoice.attachmentUrls && invoice.attachmentUrls.length > 0 ? (
-                            <a
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                router.push(`/admin/factures/${invoice.invoiceId}`);
-                              }}
-                              className="text-[#1CCEFF] hover:underline"
-                            >
-                              {invoice.attachmentUrls.length} fichier(s)
-                            </a>
-                          ) : (
-                            '-'
-                          )}
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              router.push(`/admin/factures/${invoice.invoiceId}`);
+                            }}
+                            className="text-[#1CCEFF] hover:underline"
+                          >
+                            Voir
+                          </a>
                         </td>
                       </tr>
                     ))}

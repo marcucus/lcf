@@ -209,15 +209,17 @@ export interface Quote {
   customerAddress?: string;
   items: InvoiceItem[];
   subtotal: number; // Sum of all item totals
+  taxRate: number; // Tax rate in decimal (e.g., 0.20 for 20%)
   taxAmount: number; // Sum of all taxes
   total: number; // Subtotal + taxAmount
   status: QuoteStatus;
-  validUntil?: Timestamp;
+  validUntil: Timestamp;
   notes?: string;
   relatedAppointmentId?: string;
   createdBy: string; // Admin UID who created the quote
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  sentAt?: Timestamp; // When the quote was sent by email
   linkedInvoiceId?: string; // If converted to invoice
 }
 

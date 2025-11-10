@@ -127,7 +127,7 @@ export function QuoteDetails({
                       {item.unitPrice.toFixed(2)} €
                     </td>
                     <td className="py-3 px-2 text-right text-gray-900 dark:text-white font-medium">
-                      {item.totalPrice.toFixed(2)} €
+                      {item.total.toFixed(2)} €
                     </td>
                   </tr>
                 ))}

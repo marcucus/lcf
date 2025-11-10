@@ -58,20 +58,25 @@ function calculateTotals(items: InvoiceItem[]): {
   subtotal: number;
   taxAmount: number;
   total: number;
+  taxRate: number;
 } {
   let subtotal = 0;
   let taxAmount = 0;
+  let totalTaxRate = 0;
 
   items.forEach((item) => {
     const itemTotal = item.quantity * item.unitPrice;
     const itemTax = itemTotal * (item.taxRate / 100);
     subtotal += itemTotal;
     taxAmount += itemTax;
+    totalTaxRate += item.taxRate;
   });
 
+  // Calculate average tax rate
+  const taxRate = items.length > 0 ? totalTaxRate / items.length / 100 : 0.20;
   const total = subtotal + taxAmount;
 
-  return { subtotal, taxAmount, total };
+  return { subtotal, taxAmount, total, taxRate };
 }
 
 /**
@@ -93,7 +98,10 @@ export async function createQuote(
   if (!db) throw new Error('Firebase not configured');
 
   const quoteNumber = await generateQuoteNumber();
-  const { subtotal, taxAmount, total } = calculateTotals(items);
+  const { subtotal, taxAmount, total, taxRate } = calculateTotals(items);
+
+  // Default validUntil to 30 days from now if not provided
+  const validUntilDate = validUntil || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   const quoteData: Omit<Quote, 'quoteId'> = {
     quoteNumber,
@@ -104,10 +112,11 @@ export async function createQuote(
     customerAddress,
     items,
     subtotal,
+    taxRate,
     taxAmount,
     total,
     status,
-    validUntil: validUntil ? Timestamp.fromDate(validUntil) : undefined,
+    validUntil: Timestamp.fromDate(validUntilDate),
     notes,
     relatedAppointmentId,
     createdBy,
@@ -159,8 +168,9 @@ export async function updateQuote(
 
   // If items are updated, recalculate totals
   if (updates.items) {
-    const { subtotal, taxAmount, total } = calculateTotals(updates.items);
+    const { subtotal, taxAmount, total, taxRate } = calculateTotals(updates.items);
     updates.subtotal = subtotal;
+    updates.taxRate = taxRate;
     updates.taxAmount = taxAmount;
     updates.total = total;
   }
@@ -186,6 +196,25 @@ export async function deleteQuote(quoteId: string): Promise<void> {
  * Get a single quote by ID
  */
 export async function getQuote(quoteId: string): Promise<Quote | null> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const quoteRef = doc(db, 'quotes', quoteId);
+  const quoteSnap = await getDoc(quoteRef);
+
+  if (!quoteSnap.exists()) {
+    return null;
+  }
+
+  return {
+    quoteId: quoteSnap.id,
+    ...quoteSnap.data(),
+  } as Quote;
+}
+
+/**
+ * Get a single quote by ID
+ */
+export async function getQuoteById(quoteId: string): Promise<Quote | null> {
   if (!db) throw new Error('Firebase not configured');
 
   const quoteRef = doc(db, 'quotes', quoteId);
