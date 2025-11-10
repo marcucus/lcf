@@ -116,6 +116,13 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
     
+    // Quotations collection
+    match /quotations/{quotationId} {
+      // Only admins can manage quotations
+      allow read, write: if isAdmin();
+      
+      // Users can read their own quotations if linked to their userId
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
     // Quotes collection
     match /quotes/{quoteId} {
       // Users can read their own quotes

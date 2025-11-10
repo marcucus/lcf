@@ -183,76 +183,50 @@ export interface LoyaltySettings {
   minPointsForRedemption: number;
 }
 
-// Quote status
-export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+// Quotation (Devis) types
+export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
 
-// Invoice status
-export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
-
-// Quote line item
-export interface QuoteLineItem {
+export interface QuotationItem {
   description: string;
   quantity: number;
   unitPrice: number;
-  totalPrice: number;
+  taxRate: number; // in percentage (e.g., 20 for 20%)
+  total: number; // quantity * unitPrice
 }
 
-// Invoice line item
-export interface InvoiceLineItem {
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-}
-
-// Quote interface
-export interface Quote {
-  quoteId: string;
-  quoteNumber: string;
-  userId: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  customerAddress?: string;
-  items: QuoteLineItem[];
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  status: QuoteStatus;
-  validUntil: Timestamp;
-  notes?: string;
-  relatedAppointmentId?: string;
-  relatedVehicleId?: string;
+export interface Quotation {
+  quotationId: string;
+  quotationNumber: string; // Auto-generated unique number (e.g., "DEV-2024-001")
+  status: QuotationStatus;
+  
+  // Optional links
+  userId?: string; // Link to a user
+  appointmentId?: string; // Link to an appointment
+  
+  // Client information (required even if linked to user)
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  
+  // Quotation details
+  items: QuotationItem[];
+  subtotal: number; // Sum of all items
+  totalTax: number; // Sum of all taxes
+  totalAmount: number; // Subtotal + totalTax
+  
+  // Optional details
+  notes?: string; // Additional notes for the client
+  internalNotes?: string; // Internal notes (not visible to client)
+  validUntil?: Timestamp; // Quotation validity date
+  
+  // Conversion tracking
+  convertedToInvoice?: boolean;
+  invoiceId?: string; // Link to the invoice if converted
+  
+  // Metadata
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  sentAt?: Timestamp;
-  createdBy: string;
-}
-
-// Invoice interface
-export interface Invoice {
-  invoiceId: string;
-  invoiceNumber: string;
-  userId: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  customerAddress?: string;
-  items: InvoiceLineItem[];
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  status: InvoiceStatus;
-  dueDate: Timestamp;
-  notes?: string;
-  relatedQuoteId?: string;
-  relatedAppointmentId?: string;
-  relatedVehicleId?: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  sentAt?: Timestamp;
-  paidAt?: Timestamp;
-  createdBy: string;
+  createdBy: string; // Admin user ID who created the quotation
+  sentAt?: Timestamp; // When the quotation was sent by email
 }

@@ -30,3 +30,6 @@ export {
   disconnectOAuth,
   autoRefreshTokens,
 } from './oauth/googleOAuth';
+
+// Export Quotation functions
+export { sendQuotationEmail } from './quotations/sendQuotationEmail';
