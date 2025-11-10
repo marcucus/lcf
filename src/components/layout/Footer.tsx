@@ -3,7 +3,7 @@ import { FiFacebook, FiInstagram, FiMail, FiPhone, FiMapPin } from 'react-icons/
 
 export function Footer() {
   return (
-    <footer className="bg-gray-50 dark:bg-dark-bg-secondary border-t border-light-border dark:border-dark-border">
+    <footer className="bg-gray-50 dark:bg-dark-bg-secondary border-t border-light-border dark:border-dark-border" role="contentinfo">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
@@ -17,7 +17,7 @@ export function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <nav aria-label="Quick links">
             <h4 className="font-semibold mb-4 text-gray-900 dark:text-white">
               Liens Rapides
             </h4>
@@ -43,7 +43,7 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Contact Info */}
           <div>
@@ -52,20 +52,20 @@ export function Footer() {
             </h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start space-x-2">
-                <FiMapPin className="w-4 h-4 mt-1 text-accent flex-shrink-0" />
+                <FiMapPin className="w-4 h-4 mt-1 text-accent flex-shrink-0" aria-hidden="true" />
                 <span className="text-gray-600 dark:text-gray-400">
                   123 Rue de l&apos;Automobile, 75000 Paris
                 </span>
               </li>
               <li className="flex items-center space-x-2">
-                <FiPhone className="w-4 h-4 text-accent flex-shrink-0" />
-                <a href="tel:+33123456789" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors">
+                <FiPhone className="w-4 h-4 text-accent flex-shrink-0" aria-hidden="true" />
+                <a href="tel:+33123456789" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors" aria-label="Call us at 01 23 45 67 89">
                   01 23 45 67 89
                 </a>
               </li>
               <li className="flex items-center space-x-2">
-                <FiMail className="w-4 h-4 text-accent flex-shrink-0" />
-                <a href="mailto:contact@lcf-auto.fr" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors">
+                <FiMail className="w-4 h-4 text-accent flex-shrink-0" aria-hidden="true" />
+                <a href="mailto:contact@lcf-auto.fr" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors" aria-label="Send us an email">
                   contact@lcf-auto.fr
                 </a>
               </li>
@@ -82,22 +82,24 @@ export function Footer() {
               10:00 - 12:00<br />
               14:00 - 18:00
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4" role="navigation" aria-label="Social media">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-accent hover:text-white transition-colors"
+                aria-label="Visit our Facebook page"
               >
-                <FiFacebook className="w-5 h-5" />
+                <FiFacebook className="w-5 h-5" aria-hidden="true" />
               </a>
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-accent hover:text-white transition-colors"
+                aria-label="Visit our Instagram page"
               >
-                <FiInstagram className="w-5 h-5" />
+                <FiInstagram className="w-5 h-5" aria-hidden="true" />
               </a>
             </div>
           </div>

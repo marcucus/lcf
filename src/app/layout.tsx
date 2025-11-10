@@ -47,12 +47,15 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className="antialiased">
+        <a href="#main-content" className="skip-to-main">
+          Aller au contenu principal
+        </a>
         <WebVitalsMonitor />
         <ThemeProvider>
           <AuthProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
-              <main className="flex-grow">
+              <main id="main-content" className="flex-grow" role="main">
                 {children}
               </main>
               <Footer />
