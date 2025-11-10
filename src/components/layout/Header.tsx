@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { FiMenu, FiX, FiUser, FiLogOut, FiCalendar } from 'react-icons/fi';
+import { FiMenu, FiX, FiUser, FiLogOut, FiCalendar, FiTruck } from 'react-icons/fi';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -70,10 +70,18 @@ export function Header() {
                       >
                         Mon tableau de bord
                       </Link>
+                      <Link
+                        href="/vehicules"
+                        className="flex items-center space-x-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <FiTruck className="w-4 h-4" />
+                        <span>Mes véhicules</span>
+                      </Link>
                       {(user.role === 'admin' || user.role === 'agendaManager') && (
                         <Link
                           href="/admin/calendrier"
-                          className="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2"
+                          className="flex items-center space-x-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           <FiCalendar className="w-4 h-4" />
@@ -135,6 +143,12 @@ export function Header() {
                   <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
                     <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200">
                       Mon tableau de bord
+                    </button>
+                  </Link>
+                  <Link href="/vehicules" onClick={() => setIsMenuOpen(false)}>
+                    <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2">
+                      <FiTruck className="w-4 h-4" />
+                      <span>Mes véhicules</span>
                     </button>
                   </Link>
                   {(user.role === 'admin' || user.role === 'agendaManager') && (

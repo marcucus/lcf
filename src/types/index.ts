@@ -21,9 +21,15 @@ export type AppointmentStatus = 'confirmed' | 'completed' | 'cancelled';
 
 // Vehicle information
 export interface VehicleInfo {
+  vehicleId?: string;
+  userId?: string;
   make: string;
   model: string;
   plate: string;
+  year?: number;
+  color?: string;
+  createdAt?: Timestamp;
+  lastUsed?: Timestamp;
 }
 
 // Appointment interface
