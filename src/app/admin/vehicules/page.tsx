@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { VehicleGrid } from '@/components/admin/VehicleGrid';
 import { VehicleForm } from '@/components/admin/VehicleForm';
+import { VehicleRecapModal } from '@/components/admin/VehicleRecapModal';
 import { Vehicle } from '@/types';
 import {
   getAllVehicles,
@@ -14,6 +15,7 @@ import {
   updateVehicle,
   deleteVehicle,
   markVehicleAsSold,
+  getVehicleById,
 } from '@/lib/firestore/vehicles';
 import { uploadVehicleImages, deleteAllVehicleImages } from '@/lib/firebase/storage';
 import { FiPlus, FiFilter } from 'react-icons/fi';
@@ -27,6 +29,8 @@ function VehiclesManagementPage() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | undefined>();
   const [filter, setFilter] = useState<'all' | 'available' | 'sold'>('all');
   const [error, setError] = useState<string | null>(null);
+  const [showRecapModal, setShowRecapModal] = useState(false);
+  const [createdVehicle, setCreatedVehicle] = useState<Vehicle | null>(null);
 
   useEffect(() => {
     loadVehicles();
@@ -95,6 +99,10 @@ function VehiclesManagementPage() {
           ...vehicleData,
           imageUrls,
         });
+        
+        // Reload vehicles and close form
+        await loadVehicles();
+        handleCancel();
       } else {
         // Create new vehicle
         const vehicleId = await createVehicle({
@@ -104,6 +112,13 @@ function VehiclesManagementPage() {
           price: vehicleData.price!,
           mileage: vehicleData.mileage!,
           fuelType: vehicleData.fuelType!,
+          transmission: vehicleData.transmission,
+          color: vehicleData.color,
+          doors: vehicleData.doors,
+          seats: vehicleData.seats,
+          power: vehicleData.power,
+          condition: vehicleData.condition,
+          equipment: vehicleData.equipment || [],
           description: vehicleData.description || '',
           imageUrls: [],
           isSold: false,
@@ -114,11 +129,18 @@ function VehiclesManagementPage() {
           const uploadedUrls = await uploadVehicleImages(vehicleId, newImages);
           await updateVehicle(vehicleId, { imageUrls: uploadedUrls });
         }
+        
+        // Fetch the complete vehicle data and show recap modal
+        const newVehicle = await getVehicleById(vehicleId);
+        if (newVehicle) {
+          setCreatedVehicle(newVehicle);
+          setShowRecapModal(true);
+        }
+        
+        // Reload vehicles and close form
+        await loadVehicles();
+        handleCancel();
       }
-      
-      // Reload vehicles and close form
-      await loadVehicles();
-      handleCancel();
     } catch (err) {
       console.error('Error saving vehicle:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement');
@@ -260,6 +282,18 @@ function VehiclesManagementPage() {
           onDelete={handleDelete}
           onMarkAsSold={handleMarkAsSold}
           isAdmin={true}
+        />
+      )}
+
+      {/* Vehicle Recap Modal */}
+      {createdVehicle && (
+        <VehicleRecapModal
+          isOpen={showRecapModal}
+          onClose={() => {
+            setShowRecapModal(false);
+            setCreatedVehicle(null);
+          }}
+          vehicle={createdVehicle}
         />
       )}
     </div>

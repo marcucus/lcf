@@ -60,6 +60,12 @@ export interface Appointment {
 // Fuel types
 export type FuelType = 'essence' | 'diesel' | 'electrique' | 'hybride';
 
+// Transmission types
+export type TransmissionType = 'manuelle' | 'automatique';
+
+// Vehicle condition
+export type VehicleCondition = 'excellent' | 'tres-bon' | 'bon' | 'correct';
+
 // Vehicle for sale interface
 export interface Vehicle {
   vehicleId: string;
@@ -69,6 +75,13 @@ export interface Vehicle {
   price: number;
   mileage: number;
   fuelType: FuelType;
+  transmission?: TransmissionType;
+  color?: string;
+  doors?: number;
+  seats?: number;
+  power?: number; // in horsepower (CV)
+  condition?: VehicleCondition;
+  equipment?: string[]; // List of features/equipment
   description: string;
   imageUrls: string[];
   isSold: boolean;

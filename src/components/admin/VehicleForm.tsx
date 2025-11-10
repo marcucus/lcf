@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { Vehicle, FuelType } from '@/types';
+import { Vehicle, FuelType, TransmissionType, VehicleCondition } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
@@ -26,9 +26,18 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
     price: 0,
     mileage: 0,
     fuelType: 'essence' as FuelType,
+    transmission: 'manuelle' as TransmissionType,
+    color: '',
+    doors: 5,
+    seats: 5,
+    power: 0,
+    condition: 'bon' as VehicleCondition,
+    equipment: [] as string[],
     description: '',
     isSold: false,
   });
+
+  const [equipmentInput, setEquipmentInput] = useState('');
 
   const [images, setImages] = useState<File[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
@@ -43,6 +52,13 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
         price: vehicle.price,
         mileage: vehicle.mileage,
         fuelType: vehicle.fuelType,
+        transmission: vehicle.transmission || 'manuelle',
+        color: vehicle.color || '',
+        doors: vehicle.doors || 5,
+        seats: vehicle.seats || 5,
+        power: vehicle.power || 0,
+        condition: vehicle.condition || 'bon',
+        equipment: vehicle.equipment || [],
         description: vehicle.description,
         isSold: vehicle.isSold,
       });
@@ -104,6 +120,35 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
     { value: 'electrique', label: 'Électrique' },
     { value: 'hybride', label: 'Hybride' },
   ];
+
+  const transmissionTypes: { value: TransmissionType; label: string }[] = [
+    { value: 'manuelle', label: 'Manuelle' },
+    { value: 'automatique', label: 'Automatique' },
+  ];
+
+  const conditionOptions: { value: VehicleCondition; label: string }[] = [
+    { value: 'excellent', label: 'Excellent' },
+    { value: 'tres-bon', label: 'Très bon' },
+    { value: 'bon', label: 'Bon' },
+    { value: 'correct', label: 'Correct' },
+  ];
+
+  const handleAddEquipment = () => {
+    if (equipmentInput.trim()) {
+      setFormData({
+        ...formData,
+        equipment: [...formData.equipment, equipmentInput.trim()],
+      });
+      setEquipmentInput('');
+    }
+  };
+
+  const handleRemoveEquipment = (index: number) => {
+    setFormData({
+      ...formData,
+      equipment: formData.equipment.filter((_, i) => i !== index),
+    });
+  };
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
@@ -172,6 +217,57 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
           options={fuelTypes}
           required
         />
+
+        <Select
+          label="Transmission"
+          value={formData.transmission}
+          onChange={(e) => setFormData({ ...formData, transmission: e.target.value as TransmissionType })}
+          options={transmissionTypes}
+        />
+
+        <Input
+          label="Couleur"
+          type="text"
+          value={formData.color}
+          onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+          placeholder="ex: Blanc"
+        />
+
+        <Input
+          label="Nombre de portes"
+          type="number"
+          value={formData.doors}
+          onChange={(e) => setFormData({ ...formData, doors: parseInt(e.target.value) || 5 })}
+          placeholder="5"
+          min="2"
+          max="7"
+        />
+
+        <Input
+          label="Nombre de places"
+          type="number"
+          value={formData.seats}
+          onChange={(e) => setFormData({ ...formData, seats: parseInt(e.target.value) || 5 })}
+          placeholder="5"
+          min="2"
+          max="9"
+        />
+
+        <Input
+          label="Puissance (CV)"
+          type="number"
+          value={formData.power}
+          onChange={(e) => setFormData({ ...formData, power: parseInt(e.target.value) || 0 })}
+          placeholder="120"
+          min="0"
+        />
+
+        <Select
+          label="État"
+          value={formData.condition}
+          onChange={(e) => setFormData({ ...formData, condition: e.target.value as VehicleCondition })}
+          options={conditionOptions}
+        />
       </div>
 
       <Textarea
@@ -181,6 +277,50 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
         placeholder="Décrivez le véhicule..."
         rows={4}
       />
+
+      {/* Equipment Section */}
+      <div>
+        <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+          Équipements
+        </label>
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={equipmentInput}
+            onChange={(e) => setEquipmentInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddEquipment();
+              }
+            }}
+            placeholder="ex: Climatisation, GPS, Bluetooth..."
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent"
+          />
+          <Button type="button" onClick={handleAddEquipment} size="sm">
+            Ajouter
+          </Button>
+        </div>
+        {formData.equipment.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {formData.equipment.map((item, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1 px-3 py-1 bg-accent/10 text-accent rounded-full text-sm"
+              >
+                {item}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveEquipment(index)}
+                  className="hover:text-accent/70 transition-colors"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {vehicle && (
         <div className="flex items-center gap-2">
