@@ -36,6 +36,12 @@ export function AdminSidebar() {
       icon: <FiCalendar className="w-5 h-5" />,
     },
     {
+      label: 'Chiffre d\'affaires',
+      href: '/admin/chiffre-affaires',
+      icon: <FiDollarSign className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
       label: 'Utilisateurs',
       href: '/admin/utilisateurs',
       icon: <FiUsers className="w-5 h-5" />,
@@ -63,6 +69,12 @@ export function AdminSidebar() {
       label: 'Avis Google',
       href: '/admin/avis',
       icon: <FiStar className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
+      label: 'Devis',
+      href: '/admin/devis',
+      icon: <FiFileText className="w-5 h-5" />,
       adminOnly: true,
     },
   ];
