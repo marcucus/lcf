@@ -182,3 +182,77 @@ export interface LoyaltySettings {
   referralBonusPoints?: number;
   minPointsForRedemption: number;
 }
+
+// Quote status
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+
+// Invoice status
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+// Quote line item
+export interface QuoteLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+// Invoice line item
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+// Quote interface
+export interface Quote {
+  quoteId: string;
+  quoteNumber: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  items: QuoteLineItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+  status: QuoteStatus;
+  validUntil: Timestamp;
+  notes?: string;
+  relatedAppointmentId?: string;
+  relatedVehicleId?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  sentAt?: Timestamp;
+  createdBy: string;
+}
+
+// Invoice interface
+export interface Invoice {
+  invoiceId: string;
+  invoiceNumber: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  items: InvoiceLineItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+  status: InvoiceStatus;
+  dueDate: Timestamp;
+  notes?: string;
+  relatedQuoteId?: string;
+  relatedAppointmentId?: string;
+  relatedVehicleId?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  sentAt?: Timestamp;
+  paidAt?: Timestamp;
+  createdBy: string;
+}
