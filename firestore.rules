@@ -1,44 +1,119 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // User documents - users can only read/write their own data
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    function isAgendaManager() {
+      return hasRole('agendaManager');
+    }
+    
+    function isAdminOrManager() {
+      return isAdmin() || isAgendaManager();
+    }
+    
+    // Helper function to check 24-hour rule for appointments
+    // Note: This is a first layer of defense. Cloud Functions provide the authoritative check.
+    function canModifyAppointment(appointmentData) {
+      let appointmentTime = appointmentData.dateTime;
+      let now = request.time;
+      let diffInHours = (appointmentTime - now) / duration.value(1, 'h');
+      
+      // Admin and agenda managers can always modify
+      if (isAdminOrManager()) {
+        return true;
+      }
+      
+      // Regular users need more than 24 hours
+      return diffInHours > 24;
+    }
+    
+    // Users collection
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Users can read their own document
+      allow read: if isOwner(userId);
+      
+      // Users can create their own document on signup
+      allow create: if isSignedIn() && request.auth.uid == userId 
+                    && request.resource.data.role == 'user';
+      
+      // Users can update their own profile, notification preferences, and FCM token
+      allow update: if isOwner(userId) 
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+                    || isAdmin();
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+      
+      // Admins can read all users
+      allow read: if isAdmin();
+      
+      // Admins can update user roles
+      allow update: if isAdmin();
     }
     
-    // User vehicles collection - users can only manage their own vehicles
-    match /userVehicles/{vehicleId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-    
-    // Appointments - users can read/create/update their own appointments
-    // Admins can read/update all appointments
+    // Appointments collection
     match /appointments/{appointmentId} {
-      allow read: if request.auth != null && 
-                     (request.auth.uid == resource.data.userId || 
-                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow update: if request.auth != null && 
-                       (request.auth.uid == resource.data.userId || 
-                        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow delete: if request.auth != null && 
-                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Users can read their own appointments
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdminOrManager()
+      );
+      
+      // Users can create appointments for themselves
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid
+        || isAdminOrManager()
+      );
+      
+      // Users can update/cancel their own appointments (24h rule enforced in client/functions)
+      // Admins and managers can update any appointment
+      allow update: if isSignedIn() && (
+        (resource.data.userId == request.auth.uid && canModifyAppointment(resource.data))
+        || isAdminOrManager()
+      );
+      
+      // Only admins and managers can delete appointments
+      allow delete: if isAdminOrManager();
+      
+      // Admins and managers can read all appointments
+      allow list: if isAdminOrManager();
     }
     
-    // Services - everyone can read, only admins can write
-    match /services/{serviceId} {
+    // Vehicles collection
+    match /vehicles/{vehicleId} {
+      // Everyone can read vehicles
       allow read: if true;
-      allow write: if request.auth != null && 
-                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Only admins can create, update, or delete vehicles
+      allow create, update, delete: if isAdmin();
     }
     
-    // Default deny all
-    match /{document=**} {
-      allow read, write: if false;
+    // Response templates collection (for Google reviews)
+    match /responseTemplates/{templateId} {
+      // Only admins can read/write response templates
+      allow read, write: if isAdmin();
+    }
+    
+    // Google reviews collection (cached reviews)
+    match /googleReviews/{reviewId} {
+      // Only admins can read/write reviews
+      allow read, write: if isAdmin();
     }
   }
 }

@@ -10,7 +10,18 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
+  loyaltyPoints?: number;
   createdAt: Timestamp;
+  fcmToken?: string;
+  notificationPreferences?: NotificationPreferences;
+}
+
+// Notification preferences
+export interface NotificationPreferences {
+  appointmentReminders: boolean;
+  newVehicles: boolean;
+  generalUpdates: boolean;
+  newAppointments?: boolean; // For admin/agendaManager to receive notifications of new appointments
 }
 
 // Service types
@@ -88,6 +99,20 @@ export interface ResponseTemplate {
   createdAt: Timestamp;
 }
 
+// Google OAuth configuration interface
+export interface GoogleOAuthConfig {
+  configId: string;
+  accessToken: string;
+  refreshToken: string;
+  tokenExpiresAt: Timestamp;
+  accountId?: string; // Google Business Profile account ID
+  locationId?: string; // Google Business Profile location ID
+  isConnected: boolean;
+  lastSync?: Timestamp;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 // Auth context interface
 export interface AuthContextType {
   user: User | null;
@@ -97,4 +122,59 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+}
+
+// Loyalty program types
+export type LoyaltyTransactionType = 
+  | 'appointment_completed'
+  | 'manual_adjustment'
+  | 'reward_redemption'
+  | 'bonus';
+
+export interface LoyaltyTransaction {
+  transactionId: string;
+  userId: string;
+  type: LoyaltyTransactionType;
+  points: number; // Positive for earning, negative for spending
+  description: string;
+  relatedAppointmentId?: string;
+  relatedRewardId?: string;
+  createdAt: Timestamp;
+  createdBy?: string; // For admin adjustments
+}
+
+export type RewardCategory = 'discount' | 'service' | 'product' | 'special';
+
+export interface Reward {
+  rewardId: string;
+  name: string;
+  description: string;
+  category: RewardCategory;
+  pointsCost: number;
+  imageUrl?: string;
+  isActive: boolean;
+  stock?: number; // Optional, for limited rewards
+  validUntil?: Timestamp;
+  createdAt: Timestamp;
+}
+
+export interface UserReward {
+  userRewardId: string;
+  userId: string;
+  rewardId: string;
+  rewardName: string;
+  pointsSpent: number;
+  status: 'available' | 'used' | 'expired';
+  claimedAt: Timestamp;
+  usedAt?: Timestamp;
+  expiresAt?: Timestamp;
+}
+
+export interface LoyaltySettings {
+  pointsPerAppointment: number;
+  pointsPerEuroSpent?: number;
+  welcomeBonusPoints?: number;
+  birthdayBonusPoints?: number;
+  referralBonusPoints?: number;
+  minPointsForRedemption: number;
 }
