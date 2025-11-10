@@ -182,3 +182,51 @@ export interface LoyaltySettings {
   referralBonusPoints?: number;
   minPointsForRedemption: number;
 }
+
+// Quotation (Devis) types
+export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
+
+export interface QuotationItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number; // in percentage (e.g., 20 for 20%)
+  total: number; // quantity * unitPrice
+}
+
+export interface Quotation {
+  quotationId: string;
+  quotationNumber: string; // Auto-generated unique number (e.g., "DEV-2024-001")
+  status: QuotationStatus;
+  
+  // Optional links
+  userId?: string; // Link to a user
+  appointmentId?: string; // Link to an appointment
+  
+  // Client information (required even if linked to user)
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  
+  // Quotation details
+  items: QuotationItem[];
+  subtotal: number; // Sum of all items
+  totalTax: number; // Sum of all taxes
+  totalAmount: number; // Subtotal + totalTax
+  
+  // Optional details
+  notes?: string; // Additional notes for the client
+  internalNotes?: string; // Internal notes (not visible to client)
+  validUntil?: Timestamp; // Quotation validity date
+  
+  // Conversion tracking
+  convertedToInvoice?: boolean;
+  invoiceId?: string; // Link to the invoice if converted
+  
+  // Metadata
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  createdBy: string; // Admin user ID who created the quotation
+  sentAt?: Timestamp; // When the quotation was sent by email
+}

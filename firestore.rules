@@ -115,5 +115,14 @@ service cloud.firestore {
       // Only admins can read/write reviews
       allow read, write: if isAdmin();
     }
+    
+    // Quotations collection
+    match /quotations/{quotationId} {
+      // Only admins can manage quotations
+      allow read, write: if isAdmin();
+      
+      // Users can read their own quotations if linked to their userId
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
   }
 }
