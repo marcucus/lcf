@@ -115,5 +115,35 @@ service cloud.firestore {
       // Only admins can read/write reviews
       allow read, write: if isAdmin();
     }
+    
+    // Invoices collection
+    match /invoices/{invoiceId} {
+      // Users can read their own invoices
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdmin()
+      );
+      
+      // Only admins can create, update, or delete invoices
+      allow create, update, delete: if isAdmin();
+      
+      // Admins can read all invoices
+      allow list: if isAdmin();
+    }
+    
+    // Quotes collection
+    match /quotes/{quoteId} {
+      // Users can read their own quotes
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdmin()
+      );
+      
+      // Only admins can create, update, or delete quotes
+      allow create, update, delete: if isAdmin();
+      
+      // Admins can read all quotes
+      allow list: if isAdmin();
+    }
   }
 }

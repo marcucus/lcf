@@ -2,8 +2,9 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
-import { FiCalendar, FiStar, FiTruck, FiUsers } from 'react-icons/fi';
+import { FiCalendar, FiStar, FiTruck, FiUsers, FiFileText } from 'react-icons/fi';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import Link from 'next/link';
 
 function AdminPage() {
   const { user } = useAuth();
@@ -140,6 +141,18 @@ function AdminPage() {
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Gérer les avis clients
+                  </p>
+                </a>
+                
+                <a
+                  href="/admin/factures"
+                  className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    📄 Factures
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Gérer les factures et devis
                   </p>
                 </a>
               </>
