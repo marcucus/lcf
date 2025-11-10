@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { GoogleReview, ResponseTemplate } from '@/types';
+import { GoogleReview, ResponseTemplate, TemplateCategory } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
@@ -12,7 +12,8 @@ import {
   getAllResponseTemplates,
   createResponseTemplate,
   updateResponseTemplate,
-  deleteResponseTemplate
+  deleteResponseTemplate,
+  initializeDefaultTemplates
 } from '@/lib/firestore/reviews';
 import { 
   FiStar, 
@@ -45,8 +46,9 @@ function GoogleReviewsContent() {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showTemplateManager, setShowTemplateManager] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ResponseTemplate | null>(null);
-  const [templateFormData, setTemplateFormData] = useState({ name: '', content: '' });
+  const [templateFormData, setTemplateFormData] = useState({ name: '', content: '', category: 'positif' as TemplateCategory });
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateCategoryFilter, setTemplateCategoryFilter] = useState<TemplateCategory | 'all'>('all');
 
   // Auto-refresh interval (5 minutes)
   const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000;
@@ -94,7 +96,15 @@ function GoogleReviewsContent() {
   const loadTemplates = async () => {
     try {
       const data = await getAllResponseTemplates();
-      setTemplates(data);
+      
+      // Initialize default templates if none exist
+      if (data.length === 0) {
+        await initializeDefaultTemplates();
+        const newData = await getAllResponseTemplates();
+        setTemplates(newData);
+      } else {
+        setTemplates(data);
+      }
     } catch (error) {
       console.error('Error loading templates:', error);
     }
@@ -174,16 +184,18 @@ function GoogleReviewsContent() {
       if (editingTemplate) {
         await updateResponseTemplate(editingTemplate.templateId, {
           name: templateFormData.name,
-          content: templateFormData.content
+          content: templateFormData.content,
+          category: templateFormData.category
         });
       } else {
         await createResponseTemplate({
           name: templateFormData.name,
-          content: templateFormData.content
+          content: templateFormData.content,
+          category: templateFormData.category
         });
       }
       await loadTemplates();
-      setTemplateFormData({ name: '', content: '' });
+      setTemplateFormData({ name: '', content: '', category: 'positif' });
       setEditingTemplate(null);
       setShowTemplateManager(false);
     } catch (error) {
@@ -198,7 +210,8 @@ function GoogleReviewsContent() {
     setEditingTemplate(template);
     setTemplateFormData({
       name: template.name,
-      content: template.content
+      content: template.content,
+      category: template.category
     });
     setShowTemplateManager(true);
   };
@@ -429,21 +442,52 @@ function GoogleReviewsContent() {
                 <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
                   Choisir un modèle
                 </h2>
+                
+                {/* Category Filter */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Filtrer par catégorie
+                  </label>
+                  <Select
+                    value={templateCategoryFilter}
+                    onChange={(e) => setTemplateCategoryFilter(e.target.value as TemplateCategory | 'all')}
+                    options={[
+                      { value: 'all', label: 'Toutes les catégories' },
+                      { value: 'positif', label: 'Positif' },
+                      { value: 'negatif', label: 'Négatif' },
+                      { value: 'neutre', label: 'Neutre' }
+                    ]}
+                  />
+                </div>
+
                 {templates.length === 0 ? (
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Aucun modèle disponible. Créez-en un dans la gestion des modèles.
                   </p>
                 ) : (
                   <div className="space-y-3 mb-4">
-                    {templates.map((template) => (
+                    {templates
+                      .filter(template => templateCategoryFilter === 'all' || template.category === templateCategoryFilter)
+                      .map((template) => (
                       <div
                         key={template.templateId}
                         className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         onClick={() => handleUseTemplate(template)}
                       >
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                          {template.name}
-                        </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                            {template.name}
+                          </h3>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            template.category === 'positif' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                              : template.category === 'negatif'
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                          }`}>
+                            {template.category === 'positif' ? 'Positif' : template.category === 'negatif' ? 'Négatif' : 'Neutre'}
+                          </span>
+                        </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {template.content}
                         </p>
@@ -494,6 +538,22 @@ function GoogleReviewsContent() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Catégorie
+                      </label>
+                      <Select
+                        value={templateFormData.category}
+                        onChange={(e) =>
+                          setTemplateFormData({ ...templateFormData, category: e.target.value as TemplateCategory })
+                        }
+                        options={[
+                          { value: 'positif', label: 'Positif' },
+                          { value: 'negatif', label: 'Négatif' },
+                          { value: 'neutre', label: 'Neutre' }
+                        ]}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Contenu
                       </label>
                       <Textarea
@@ -518,7 +578,7 @@ function GoogleReviewsContent() {
                         <Button
                           onClick={() => {
                             setEditingTemplate(null);
-                            setTemplateFormData({ name: '', content: '' });
+                            setTemplateFormData({ name: '', content: '', category: 'positif' });
                           }}
                           variant="secondary"
                         >
@@ -547,9 +607,20 @@ function GoogleReviewsContent() {
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                                {template.name}
-                              </h4>
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="font-semibold text-gray-900 dark:text-white">
+                                  {template.name}
+                                </h4>
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                  template.category === 'positif' 
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                    : template.category === 'negatif'
+                                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                }`}>
+                                  {template.category === 'positif' ? 'Positif' : template.category === 'negatif' ? 'Négatif' : 'Neutre'}
+                                </span>
+                              </div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {template.content}
                               </p>
@@ -579,7 +650,7 @@ function GoogleReviewsContent() {
                   onClick={() => {
                     setShowTemplateManager(false);
                     setEditingTemplate(null);
-                    setTemplateFormData({ name: '', content: '' });
+                    setTemplateFormData({ name: '', content: '', category: 'positif' });
                   }}
                   variant="secondary"
                   className="w-full"

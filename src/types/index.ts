@@ -91,11 +91,15 @@ export interface GoogleReview {
   };
 }
 
+// Response template categories
+export type TemplateCategory = 'positif' | 'negatif' | 'neutre';
+
 // Response template interface
 export interface ResponseTemplate {
   templateId: string;
   name: string;
   content: string;
+  category: TemplateCategory;
   createdAt: Timestamp;
 }
 

@@ -8,10 +8,11 @@ import {
   deleteDoc,
   query, 
   orderBy,
+  where,
   Timestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { GoogleReview, ResponseTemplate } from '@/types';
+import { GoogleReview, ResponseTemplate, TemplateCategory } from '@/types';
 
 // ============================================================================
 // RESPONSE TEMPLATES MANAGEMENT
@@ -84,6 +85,85 @@ export async function deleteResponseTemplate(templateId: string): Promise<void> 
     await deleteDoc(templateRef);
   } catch (error) {
     console.error('Error deleting response template:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get response templates by category
+ */
+export async function getTemplatesByCategory(category: TemplateCategory): Promise<ResponseTemplate[]> {
+  try {
+    if (!db) throw new Error('Database not initialized');
+    const templatesRef = collection(db, 'responseTemplates');
+    const q = query(templatesRef, where('category', '==', category), orderBy('createdAt', 'desc'));
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      templateId: doc.id,
+      ...doc.data()
+    } as ResponseTemplate));
+  } catch (error) {
+    console.error('Error getting templates by category:', error);
+    throw error;
+  }
+}
+
+/**
+ * Initialize default response templates
+ * This function creates example templates if none exist
+ */
+export async function initializeDefaultTemplates(): Promise<void> {
+  try {
+    if (!db) throw new Error('Database not initialized');
+    
+    // Check if templates already exist
+    const existing = await getAllResponseTemplates();
+    if (existing.length > 0) {
+      console.log('Templates already exist, skipping initialization');
+      return;
+    }
+
+    const defaultTemplates = [
+      {
+        name: 'Réponse Positive Standard',
+        content: 'Merci beaucoup pour votre commentaire positif ! Nous sommes ravis que votre expérience chez LCF AUTO PERFORMANCE vous ait plu. Votre satisfaction est notre priorité et nous espérons vous revoir très bientôt !',
+        category: 'positif' as TemplateCategory
+      },
+      {
+        name: 'Réponse Positive Détaillée',
+        content: 'Merci infiniment pour ce retour très positif ! Toute l\'équipe de LCF AUTO PERFORMANCE est ravie d\'avoir pu vous satisfaire. Nous mettons un point d\'honneur à offrir un service de qualité et votre confiance nous encourage à continuer dans cette voie. Au plaisir de vous accueillir à nouveau !',
+        category: 'positif' as TemplateCategory
+      },
+      {
+        name: 'Réponse Négative Empathique',
+        content: 'Nous sommes sincèrement désolés d\'apprendre que votre visite n\'a pas été à la hauteur de vos attentes. Votre satisfaction est notre priorité absolue. Pourriez-vous nous contacter directement afin que nous puissions en discuter et trouver une solution ? Nous restons à votre disposition.',
+        category: 'negatif' as TemplateCategory
+      },
+      {
+        name: 'Réponse Négative avec Contact',
+        content: 'Nous prenons très au sérieux votre retour et regrettons sincèrement que notre service ne vous ait pas satisfait. Nous souhaiterions échanger avec vous pour mieux comprendre la situation et y remédier. N\'hésitez pas à nous contacter au [téléphone] ou par email à [email]. Merci de nous donner une chance de corriger cela.',
+        category: 'negatif' as TemplateCategory
+      },
+      {
+        name: 'Réponse Neutre Standard',
+        content: 'Merci d\'avoir pris le temps de laisser votre avis. Vos retours sont précieux pour nous aider à améliorer continuellement nos services. N\'hésitez pas à nous contacter si vous avez des questions ou des suggestions.',
+        category: 'neutre' as TemplateCategory
+      },
+      {
+        name: 'Réponse Neutre avec Invitation',
+        content: 'Merci pour votre retour. Nous prenons note de vos commentaires qui nous aident à progresser. Si vous avez des questions ou souhaitez discuter de votre expérience, notre équipe reste à votre entière disposition. Au plaisir de vous revoir chez LCF AUTO PERFORMANCE !',
+        category: 'neutre' as TemplateCategory
+      }
+    ];
+
+    // Create all default templates
+    const promises = defaultTemplates.map(template => createResponseTemplate(template));
+    await Promise.all(promises);
+    
+    console.log('Default templates initialized successfully');
+  } catch (error) {
+    console.error('Error initializing default templates:', error);
     throw error;
   }
 }
