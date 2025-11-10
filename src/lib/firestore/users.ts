@@ -66,6 +66,9 @@ export async function getUserById(userId: string): Promise<User | null> {
   }
 }
 
+// Alias for getUserById for convenience
+export const getUser = getUserById;
+
 // Create a new user manually (admin only)
 // NOTE: This function creates only the Firestore user document.
 // In a production environment, this should be implemented as a Cloud Function

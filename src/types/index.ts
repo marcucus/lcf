@@ -184,56 +184,64 @@ export interface LoyaltySettings {
   minPointsForRedemption: number;
 }
 
-// Invoice types for fiscal declaration
-export type InvoiceStatus = 'paid' | 'pending' | 'cancelled';
-export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'check';
+// Invoice and Quote types
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'cancelled' | 'overdue';
+export type InvoiceOrigin = 'appointment' | 'quote' | 'user' | 'manual';
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
 
 export interface InvoiceItem {
+  itemId: string;
   description: string;
   quantity: number;
   unitPrice: number;
-  vatRate: number; // TVA rate (0 for auto-entrepreneur without VAT)
-  totalHT: number; // Total excluding VAT
-  totalTTC: number; // Total including VAT
+  taxRate: number; // Percentage (e.g., 20 for 20%)
+  total: number; // quantity * unitPrice
+  totalWithTax: number; // total * (1 + taxRate/100)
+}
+
+export interface Quote {
+  quoteId: string;
+  quoteNumber: string; // Human-readable quote number (e.g., "DEV-2024-001")
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  items: InvoiceItem[];
+  subtotal: number; // Sum of all item totals
+  taxAmount: number; // Sum of all taxes
+  total: number; // Subtotal + taxAmount
+  status: QuoteStatus;
+  validUntil?: Timestamp;
+  notes?: string;
+  relatedAppointmentId?: string;
+  createdBy: string; // Admin UID who created the quote
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  linkedInvoiceId?: string; // If converted to invoice
 }
 
 export interface Invoice {
   invoiceId: string;
-  invoiceNumber: string; // Unique invoice number (e.g., "FAC-2024-001")
-  userId: string; // Customer ID
+  invoiceNumber: string; // Human-readable invoice number (e.g., "FACT-2024-001")
+  userId: string;
   customerName: string;
-  customerEmail?: string;
+  customerEmail: string;
+  customerPhone?: string;
   customerAddress?: string;
-  appointmentId?: string; // Link to appointment if applicable
-  issueDate: Timestamp; // Date of invoice issue
-  dueDate?: Timestamp; // Payment due date
-  paymentDate?: Timestamp; // Actual payment date
-  status: InvoiceStatus;
-  paymentMethod?: PaymentMethod;
   items: InvoiceItem[];
-  totalHT: number; // Total excluding VAT
-  totalTVA: number; // Total VAT amount
-  totalTTC: number; // Total including VAT
+  subtotal: number; // Sum of all item totals
+  taxAmount: number; // Sum of all taxes
+  total: number; // Subtotal + taxAmount
+  status: InvoiceStatus;
+  origin: InvoiceOrigin;
+  relatedAppointmentId?: string; // If created from appointment
+  relatedQuoteId?: string; // If created from quote
+  dueDate?: Timestamp;
+  paidDate?: Timestamp;
   notes?: string;
-  attachmentUrls?: string[]; // Supporting documents (receipts, etc.)
+  createdBy: string; // Admin UID who created the invoice
   createdAt: Timestamp;
-  updatedAt?: Timestamp;
-  createdBy: string; // Admin user who created the invoice
-}
-
-// Fiscal export parameters
-export interface FiscalExportParams {
-  startDate: Date;
-  endDate: Date;
-  includeAttachments: boolean;
-  format: 'csv' | 'pdf';
-}
-
-// Fiscal summary for export
-export interface FiscalSummary {
-  totalRevenue: number; // Total revenue (sum of all paid invoices)
-  totalInvoices: number;
-  periodStart: Date;
-  periodEnd: Date;
-  invoices: Invoice[];
+  updatedAt: Timestamp;
+  sentAt?: Timestamp; // When the invoice was sent by email
 }

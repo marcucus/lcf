@@ -111,6 +111,28 @@ export async function getAllAppointments(): Promise<Appointment[]> {
   }
 }
 
+// Get a single appointment by ID
+export async function getAppointment(appointmentId: string): Promise<Appointment | null> {
+  if (!db) throw new Error('Firebase not configured');
+  
+  try {
+    const appointmentRef = doc(db, 'appointments', appointmentId);
+    const appointmentSnap = await getDoc(appointmentRef);
+    
+    if (!appointmentSnap.exists()) {
+      return null;
+    }
+    
+    return {
+      appointmentId: appointmentSnap.id,
+      ...appointmentSnap.data(),
+    } as Appointment;
+  } catch (error) {
+    console.error('Error getting appointment:', error);
+    throw error;
+  }
+}
+
 // Update appointment
 export async function updateAppointment(
   appointmentId: string,

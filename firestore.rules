@@ -118,6 +118,19 @@ service cloud.firestore {
     
     // Invoices collection
     match /invoices/{invoiceId} {
+      // Users can read their own invoices
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdmin()
+      );
+      
+      // Only admins can create, update, or delete invoices
+      allow create, update, delete: if isAdmin();
+      
+      // Admins can read all invoices
+      allow list: if isAdmin();
+    }
+    
       // Only admins can read invoices
       allow read: if isAdmin();
       
@@ -147,6 +160,14 @@ service cloud.firestore {
       // Users can read their own quotes
       allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid 
+        || isAdmin()
+      );
+      
+      // Only admins can create, update, or delete quotes
+      allow create, update, delete: if isAdmin();
+      
+      // Admins can read all quotes
+      allow list: if isAdmin();
         || isAdminOrManager()
       );
       
