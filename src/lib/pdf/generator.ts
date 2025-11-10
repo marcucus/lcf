@@ -61,7 +61,7 @@ export function generateQuotePDF(quote: Quote): jsPDF {
     doc.text(item.description, 20, yPos);
     doc.text(item.quantity.toString(), 120, yPos, { align: 'right' });
     doc.text(`${item.unitPrice.toFixed(2)} €`, 150, yPos, { align: 'right' });
-    doc.text(`${item.totalPrice.toFixed(2)} €`, 190, yPos, { align: 'right' });
+    doc.text(`${item.total.toFixed(2)} €`, 190, yPos, { align: 'right' });
     yPos += 7;
   });
   
@@ -120,7 +120,9 @@ export function generateInvoicePDF(invoice: Invoice): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.text(`Numéro: ${invoice.invoiceNumber}`, 20, 60);
   doc.text(`Date: ${new Date(invoice.createdAt.toDate()).toLocaleDateString('fr-FR')}`, 20, 67);
-  doc.text(`Date d'échéance: ${new Date(invoice.dueDate.toDate()).toLocaleDateString('fr-FR')}`, 20, 74);
+  if (invoice.dueDate) {
+    doc.text(`Date d'échéance: ${new Date(invoice.dueDate.toDate()).toLocaleDateString('fr-FR')}`, 20, 74);
+  }
   
   // Add status badge
   let statusText = '';
@@ -175,7 +177,7 @@ export function generateInvoicePDF(invoice: Invoice): jsPDF {
     doc.text(item.description, 20, yPos);
     doc.text(item.quantity.toString(), 120, yPos, { align: 'right' });
     doc.text(`${item.unitPrice.toFixed(2)} €`, 150, yPos, { align: 'right' });
-    doc.text(`${item.totalPrice.toFixed(2)} €`, 190, yPos, { align: 'right' });
+    doc.text(`${item.total.toFixed(2)} €`, 190, yPos, { align: 'right' });
     yPos += 7;
   });
   
@@ -188,7 +190,7 @@ export function generateInvoicePDF(invoice: Invoice): jsPDF {
   doc.text(`${invoice.subtotal.toFixed(2)} €`, 190, yPos, { align: 'right' });
   yPos += 7;
   
-  doc.text(`TVA (${(invoice.taxRate * 100).toFixed(0)}%):`, 120, yPos);
+  doc.text('TVA:', 120, yPos);
   doc.text(`${invoice.taxAmount.toFixed(2)} €`, 190, yPos, { align: 'right' });
   yPos += 7;
   

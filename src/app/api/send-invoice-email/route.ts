@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getInvoiceById } from '@/lib/firestore/invoices';
+import { getInvoice } from '@/lib/firestore/invoices';
 import { generateInvoicePDF } from '@/lib/pdf/generator';
 
 export async function POST(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the invoice from Firestore
-    const invoice = await getInvoiceById(invoiceId);
+    const invoice = await getInvoice(invoiceId);
     
     if (!invoice) {
       return NextResponse.json(

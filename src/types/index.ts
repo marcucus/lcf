@@ -260,3 +260,33 @@ export interface Invoice {
   updatedAt: Timestamp;
   sentAt?: Timestamp; // When the invoice was sent by email
 }
+
+// Quotation interface (devis) - different from Quote to maintain compatibility with existing quotations.ts
+export interface Quotation {
+  quotationId: string;
+  quotationNumber: string; // Human-readable quotation number (e.g., "DEV-2024-001")
+  status: QuotationStatus;
+  userId?: string;
+  appointmentId?: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  items: QuotationItem[];
+  subtotal: number;
+  totalTax: number;
+  totalAmount: number;
+  notes?: string;
+  internalNotes?: string;
+  validUntil?: Timestamp;
+  convertedToInvoice: boolean;
+  invoiceId?: string;
+  sentAt?: Timestamp;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  createdBy: string;
+}
+
+// Type aliases for backward compatibility
+export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
+export type QuotationItem = InvoiceItem;
