@@ -182,3 +182,57 @@ export interface LoyaltySettings {
   referralBonusPoints?: number;
   minPointsForRedemption: number;
 }
+
+// Invoice types for fiscal declaration
+export type InvoiceStatus = 'paid' | 'pending' | 'cancelled';
+export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'check';
+
+export interface InvoiceItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  vatRate: number; // TVA rate (0 for auto-entrepreneur without VAT)
+  totalHT: number; // Total excluding VAT
+  totalTTC: number; // Total including VAT
+}
+
+export interface Invoice {
+  invoiceId: string;
+  invoiceNumber: string; // Unique invoice number (e.g., "FAC-2024-001")
+  userId: string; // Customer ID
+  customerName: string;
+  customerEmail?: string;
+  customerAddress?: string;
+  appointmentId?: string; // Link to appointment if applicable
+  issueDate: Timestamp; // Date of invoice issue
+  dueDate?: Timestamp; // Payment due date
+  paymentDate?: Timestamp; // Actual payment date
+  status: InvoiceStatus;
+  paymentMethod?: PaymentMethod;
+  items: InvoiceItem[];
+  totalHT: number; // Total excluding VAT
+  totalTVA: number; // Total VAT amount
+  totalTTC: number; // Total including VAT
+  notes?: string;
+  attachmentUrls?: string[]; // Supporting documents (receipts, etc.)
+  createdAt: Timestamp;
+  updatedAt?: Timestamp;
+  createdBy: string; // Admin user who created the invoice
+}
+
+// Fiscal export parameters
+export interface FiscalExportParams {
+  startDate: Date;
+  endDate: Date;
+  includeAttachments: boolean;
+  format: 'csv' | 'pdf';
+}
+
+// Fiscal summary for export
+export interface FiscalSummary {
+  totalRevenue: number; // Total revenue (sum of all paid invoices)
+  totalInvoices: number;
+  periodStart: Date;
+  periodEnd: Date;
+  invoices: Invoice[];
+}

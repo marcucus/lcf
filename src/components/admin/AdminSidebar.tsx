@@ -9,6 +9,8 @@ import {
   FiUsers,
   FiTruck,
   FiStar,
+  FiFileText,
+  FiDollarSign,
 } from 'react-icons/fi';
 
 interface NavItem {
@@ -43,6 +45,18 @@ export function AdminSidebar() {
       label: 'Véhicules',
       href: '/admin/vehicules',
       icon: <FiTruck className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
+      label: 'Factures',
+      href: '/admin/factures',
+      icon: <FiFileText className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
+      label: 'Déclaration Fiscale',
+      href: '/admin/declaration-fiscale',
+      icon: <FiDollarSign className="w-5 h-5" />,
       adminOnly: true,
     },
     {
