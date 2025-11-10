@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import WebVitalsMonitor from "@/components/monitoring/WebVitalsMonitor";
+import { AccessibilityChecker } from "@/components/accessibility/AccessibilityChecker";
 
 export const metadata: Metadata = {
   title: "LCF Auto Performance",
@@ -51,6 +52,7 @@ export default function RootLayout({
           Aller au contenu principal
         </a>
         <WebVitalsMonitor />
+        <AccessibilityChecker />
         <ThemeProvider>
           <AuthProvider>
             <div className="flex flex-col min-h-screen">
