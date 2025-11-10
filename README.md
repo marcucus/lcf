@@ -8,6 +8,7 @@ Application web professionnelle pour le garage LCF Auto Performance, incluant sy
 - ✅ **[TASKS.md](./TASKS.md)** - Liste complète des tâches à effectuer
 - 📖 **[PROJET.md](./PROJET.md)** - Documentation technique détaillée
 - 📝 **[specifications.md](./specifications.md)** - Cahier des charges complet
+- 💰 **[INVOICE_SYSTEM.md](./INVOICE_SYSTEM.md)** - Système de facturation et déclaration fiscale
 
 ## 🎯 Fonctionnalités principales
 
@@ -18,6 +19,8 @@ Application web professionnelle pour le garage LCF Auto Performance, incluant sy
 - ✅ **Thème clair/sombre** - Toggle automatique avec préférences système
 - ✅ **Design responsive** - Mobile-first avec Tailwind CSS
 - ✅ **Notifications Push FCM** - Rappels de RDV et nouveaux véhicules
+- ✅ **Gestion de factures** - Système complet de facturation
+- ✅ **Déclaration fiscale** - Export CSV/PDF pour auto-entrepreneur
 - 🔄 **Administration** - Gestion utilisateurs et véhicules (en cours)
 - 🔄 **Avis Google** - Intégration API Google Business (planifié)
 
@@ -61,6 +64,9 @@ npm start
 ```
 src/
 ├── app/                 # Pages Next.js
+│   ├── admin/          # Administration
+│   │   ├── factures/   # Gestion des factures
+│   │   └── declaration-fiscale/ # Export fiscal
 │   ├── dashboard/      # Espace client
 │   ├── rendez-vous/    # Système de réservation
 │   ├── services/       # Pages de services
@@ -73,6 +79,7 @@ src/
 ├── lib/               # Utilitaires
 │   ├── firebase/      # Configuration Firebase & FCM
 │   └── firestore/     # Helpers base de données
+│       └── invoices.ts # Opérations factures
 └── types/             # Types TypeScript
 
 functions/             # Cloud Functions Firebase
@@ -147,6 +154,26 @@ Les utilisateurs peuvent:
 - `sendAppointmentReminders`: Fonction planifiée (toutes les heures)
 - `onVehicleCreated`: Trigger Firestore sur création de véhicule
 - `onVehicleUpdated`: Trigger Firestore sur mise à jour de véhicule
+
+## 💰 Système de Facturation et Déclaration Fiscale
+
+Le système permet la gestion complète des factures et l'export des données pour la déclaration fiscale auto-entrepreneur:
+
+### Fonctionnalités
+- **Gestion de factures**: Création, modification, suivi des paiements
+- **Numérotation séquentielle**: Format FAC-YYYY-NNN avec reset annuel
+- **Calcul TVA**: Support multi-lignes avec calculs automatiques
+- **Export CSV**: Compatible Excel pour logiciels comptables
+- **Export PDF**: Rapports imprimables pour déclarations fiscales
+- **Filtrage par période**: Sélection de plage de dates
+- **Pièces justificatives**: Support pour documents attachés
+
+### Usage
+1. **Créer une facture**: Admin > Factures > Nouvelle Facture
+2. **Suivre les paiements**: Marquer les factures comme payées avec date/méthode
+3. **Exporter pour déclaration**: Admin > Déclaration Fiscale > Sélectionner période > Exporter
+
+Pour plus de détails, voir [INVOICE_SYSTEM.md](./INVOICE_SYSTEM.md)
 
 ## 🤝 Contribution
 
