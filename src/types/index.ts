@@ -230,3 +230,48 @@ export interface Quotation {
   createdBy: string; // Admin user ID who created the quotation
   sentAt?: Timestamp; // When the quotation was sent by email
 }
+
+// Invoice (Facture) types
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number; // quantity * unitPrice
+}
+
+export interface Invoice {
+  invoiceId: string;
+  invoiceNumber: string; // Auto-generated unique number (e.g., "FACT-2024-00001")
+  status: InvoiceStatus;
+  
+  // Customer information
+  userId: string; // Link to a user
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  
+  // Invoice details
+  items: InvoiceLineItem[];
+  subtotal: number; // Sum of all items
+  taxRate: number; // Tax rate in decimal (e.g., 0.20 for 20%)
+  taxAmount: number; // Calculated tax
+  total: number; // Subtotal + taxAmount
+  
+  // Payment details
+  dueDate: Timestamp;
+  paidAt?: Timestamp;
+  
+  // Optional details
+  notes?: string;
+  
+  // Link to quotation if converted
+  quotationId?: string;
+  
+  // Metadata
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  sentAt?: Timestamp; // When the invoice was sent by email
+}
