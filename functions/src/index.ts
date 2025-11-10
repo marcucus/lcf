@@ -20,6 +20,7 @@ export { onVehicleCreated, onVehicleUpdated } from './vehicleNotifications';
 export { onAppointmentCreated } from './adminNotifications';
 // Export Google Reviews functions
 export { getReviews } from './reviews/getReviews';
+export { postReply } from './reviews/postReply';
 
 // Export OAuth functions
 export {
