@@ -275,3 +275,44 @@ export interface Invoice {
   updatedAt: Timestamp;
   sentAt?: Timestamp; // When the invoice was sent by email
 }
+
+// Quote (Devis - alternative naming) types
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+
+export interface QuoteLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number; // quantity * unitPrice
+}
+
+export interface Quote {
+  quoteId: string;
+  quoteNumber: string; // Auto-generated unique number (e.g., "DEV-2024-00001")
+  status: QuoteStatus;
+  
+  // Customer information
+  userId: string; // Link to a user
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  
+  // Quote details
+  items: QuoteLineItem[];
+  subtotal: number; // Sum of all items
+  taxRate: number; // Tax rate in decimal (e.g., 0.20 for 20%)
+  taxAmount: number; // Calculated tax
+  total: number; // Subtotal + taxAmount
+  
+  // Validity
+  validUntil: Timestamp;
+  
+  // Optional details
+  notes?: string;
+  
+  // Metadata
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  sentAt?: Timestamp; // When the quote was sent by email
+}
