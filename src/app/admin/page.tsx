@@ -109,6 +109,18 @@ function AdminPage() {
             {user?.role === 'admin' && (
               <>
                 <a
+                  href="/admin/chiffre-affaires"
+                  className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    💰 Chiffre d&apos;affaires
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Suivi des revenus et déclaration fiscale
+                  </p>
+                </a>
+                
+                <a
                   href="/admin/utilisateurs"
                   className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >

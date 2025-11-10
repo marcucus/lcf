@@ -53,6 +53,7 @@ export interface Appointment {
   vehicleInfo: VehicleInfo;
   customerNotes?: string;
   status: AppointmentStatus;
+  amount?: number; // Revenue amount for this appointment in euros
   createdAt: Timestamp;
 }
 
