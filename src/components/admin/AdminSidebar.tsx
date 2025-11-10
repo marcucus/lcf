@@ -10,6 +10,7 @@ import {
   FiTruck,
   FiStar,
   FiDollarSign,
+  FiFileText,
 } from 'react-icons/fi';
 
 interface NavItem {
@@ -56,6 +57,12 @@ export function AdminSidebar() {
       label: 'Avis Google',
       href: '/admin/avis',
       icon: <FiStar className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
+      label: 'Devis',
+      href: '/admin/devis',
+      icon: <FiFileText className="w-5 h-5" />,
       adminOnly: true,
     },
   ];

@@ -154,6 +154,18 @@ function AdminPage() {
                     Gérer les avis clients
                   </p>
                 </a>
+                
+                <a
+                  href="/admin/devis"
+                  className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    📄 Devis
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Créer et gérer les devis
+                  </p>
+                </a>
               </>
             )}
           </div>

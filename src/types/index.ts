@@ -183,3 +183,137 @@ export interface LoyaltySettings {
   referralBonusPoints?: number;
   minPointsForRedemption: number;
 }
+
+// Quotation (Devis) types
+export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
+
+export interface QuotationItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number; // in percentage (e.g., 20 for 20%)
+  total: number; // quantity * unitPrice
+}
+
+export interface Quotation {
+  quotationId: string;
+  quotationNumber: string; // Auto-generated unique number (e.g., "DEV-2024-001")
+  status: QuotationStatus;
+  
+  // Optional links
+  userId?: string; // Link to a user
+  appointmentId?: string; // Link to an appointment
+  
+  // Client information (required even if linked to user)
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  
+  // Quotation details
+  items: QuotationItem[];
+  subtotal: number; // Sum of all items
+  totalTax: number; // Sum of all taxes
+  totalAmount: number; // Subtotal + totalTax
+  
+  // Optional details
+  notes?: string; // Additional notes for the client
+  internalNotes?: string; // Internal notes (not visible to client)
+  validUntil?: Timestamp; // Quotation validity date
+  
+  // Conversion tracking
+  convertedToInvoice?: boolean;
+  invoiceId?: string; // Link to the invoice if converted
+  
+  // Metadata
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  createdBy: string; // Admin user ID who created the quotation
+  sentAt?: Timestamp; // When the quotation was sent by email
+}
+
+// Invoice (Facture) types
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number; // quantity * unitPrice
+}
+
+export interface Invoice {
+  invoiceId: string;
+  invoiceNumber: string; // Auto-generated unique number (e.g., "FACT-2024-00001")
+  status: InvoiceStatus;
+  
+  // Customer information
+  userId: string; // Link to a user
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  
+  // Invoice details
+  items: InvoiceLineItem[];
+  subtotal: number; // Sum of all items
+  taxRate: number; // Tax rate in decimal (e.g., 0.20 for 20%)
+  taxAmount: number; // Calculated tax
+  total: number; // Subtotal + taxAmount
+  
+  // Payment details
+  dueDate: Timestamp;
+  paidAt?: Timestamp;
+  
+  // Optional details
+  notes?: string;
+  
+  // Link to quotation if converted
+  quotationId?: string;
+  
+  // Metadata
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  sentAt?: Timestamp; // When the invoice was sent by email
+}
+
+// Quote (Devis - alternative naming) types
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+
+export interface QuoteLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number; // quantity * unitPrice
+}
+
+export interface Quote {
+  quoteId: string;
+  quoteNumber: string; // Auto-generated unique number (e.g., "DEV-2024-00001")
+  status: QuoteStatus;
+  
+  // Customer information
+  userId: string; // Link to a user
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  
+  // Quote details
+  items: QuoteLineItem[];
+  subtotal: number; // Sum of all items
+  taxRate: number; // Tax rate in decimal (e.g., 0.20 for 20%)
+  taxAmount: number; // Calculated tax
+  total: number; // Subtotal + taxAmount
+  
+  // Validity
+  validUntil: Timestamp;
+  
+  // Optional details
+  notes?: string;
+  
+  // Metadata
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  sentAt?: Timestamp; // When the quote was sent by email
+}

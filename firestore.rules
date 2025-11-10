@@ -115,5 +115,54 @@ service cloud.firestore {
       // Only admins can read/write reviews
       allow read, write: if isAdmin();
     }
+    
+    // Quotations collection
+    match /quotations/{quotationId} {
+      // Only admins can manage quotations
+      allow read, write: if isAdmin();
+      
+      // Users can read their own quotations if linked to their userId
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+    // Quotes collection
+    match /quotes/{quoteId} {
+      // Users can read their own quotes
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdminOrManager()
+      );
+      
+      // Only admins and managers can create quotes
+      allow create: if isAdminOrManager();
+      
+      // Only admins and managers can update quotes
+      allow update: if isAdminOrManager();
+      
+      // Only admins and managers can delete quotes
+      allow delete: if isAdminOrManager();
+      
+      // Admins and managers can list all quotes
+      allow list: if isAdminOrManager();
+    }
+    
+    // Invoices collection
+    match /invoices/{invoiceId} {
+      // Users can read their own invoices
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdminOrManager()
+      );
+      
+      // Only admins and managers can create invoices
+      allow create: if isAdminOrManager();
+      
+      // Only admins and managers can update invoices
+      allow update: if isAdminOrManager();
+      
+      // Only admins and managers can delete invoices
+      allow delete: if isAdminOrManager();
+      
+      // Admins and managers can list all invoices
+      allow list: if isAdminOrManager();
+    }
   }
 }
