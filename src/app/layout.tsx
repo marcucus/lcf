@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import WebVitalsMonitor from "@/components/monitoring/WebVitalsMonitor";
 
 export const metadata: Metadata = {
   title: "LCF Auto Performance",
@@ -16,6 +17,10 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+  icons: {
+    icon: "/icons/icon-72x72.png",
+    apple: "/icons/icon-192x192.png",
   },
 };
 
@@ -34,10 +39,15 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
+        {/* Performance optimization: Preconnect to external domains */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.google.com" />
         <link rel="icon" href="/icons/icon-72x72.png" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className="antialiased">
+        <WebVitalsMonitor />
         <ThemeProvider>
           <AuthProvider>
             <div className="flex flex-col min-h-screen">
