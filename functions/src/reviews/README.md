@@ -1,10 +1,15 @@
-# Google Reviews Cloud Function
+# Google Reviews Cloud Functions
 
-This directory contains the Cloud Function for retrieving Google Business Profile reviews.
+This directory contains Cloud Functions for managing Google Business Profile reviews.
 
 ## Overview
 
-The `getReviews` Cloud Function provides a secure server-side proxy for fetching reviews from Google Business Profile API. It implements OAuth 2.0 token management, pagination, error handling, and rate limiting as specified in Section 7.5 of the project specifications.
+These Cloud Functions provide secure server-side proxies for interacting with Google Business Profile API. They implement OAuth 2.0 token management, comprehensive error handling, and rate limiting as specified in Section 7.5 of the project specifications.
+
+### Available Functions
+
+- **`getReviews`**: Fetches reviews from Google Business Profile API with pagination support
+- **`postReply`**: Posts a reply to a specific review on Google Business Profile
 
 ## Features
 
@@ -181,14 +186,141 @@ See `../tests/getReviews.test.ts` for comprehensive test scenarios covering:
 - Rate limiting
 - Review data parsing
 
+---
+
+## Function: `postReply`
+
+### Authentication & Authorization
+
+- **Authentication**: Requires user to be logged in via Firebase Auth
+- **Authorization**: Only users with `role: 'admin'` can call this function
+- **Security**: API credentials never exposed to client (server-side only)
+
+### Request Parameters
+
+```typescript
+{
+  reviewId: string;     // Required: ID of the review to reply to
+  replyText: string;    // Required: Text content of the reply (max 4096 chars)
+}
+```
+
+### Response Format
+
+```typescript
+{
+  success: boolean;     // Operation success status
+  message: string;      // Confirmation message
+}
+```
+
+### Error Handling
+
+The function handles the following error scenarios:
+
+| Error Code | Scenario | Message |
+|------------|----------|---------|
+| `unauthenticated` | User not logged in | "Vous devez être connecté pour répondre aux avis" |
+| `permission-denied` | Non-admin user | "Seuls les administrateurs peuvent répondre aux avis Google" |
+| `failed-precondition` | Missing/incomplete config | Configuration error messages |
+| `invalid-argument` | Missing/invalid parameters | Parameter-specific error messages |
+| `invalid-argument` | Reply text too long | "Le texte de la réponse ne doit pas dépasser 4096 caractères" |
+| `invalid-argument` | Already replied / invalid request | "Requête invalide..." |
+| `not-found` | Invalid review ID | "Avis non trouvé..." |
+| `resource-exhausted` | Rate limit exceeded | Rate limit guidance message |
+| `internal` | Other errors | Generic error message |
+
+### Usage Example
+
+#### Client-side (JavaScript/TypeScript)
+
+```typescript
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
+const functions = getFunctions();
+const postReply = httpsCallable(functions, 'postReply');
+
+// Post a reply to a review
+try {
+  const result = await postReply({
+    reviewId: 'accounts/123/locations/456/reviews/789',
+    replyText: 'Merci beaucoup pour votre retour positif! Nous sommes ravis que vous ayez apprécié nos services.'
+  });
+  
+  if (result.data.success) {
+    console.log('Reply posted successfully:', result.data.message);
+  }
+} catch (error) {
+  console.error('Error posting reply:', error.message);
+}
+```
+
+#### Admin SDK (Server-side)
+
+```typescript
+import * as admin from 'firebase-admin';
+
+const callable = admin.functions().httpsCallable('postReply');
+const result = await callable({
+  reviewId: 'accounts/123/locations/456/reviews/789',
+  replyText: 'Merci pour votre avis!'
+});
+console.log(result.data);
+```
+
+### Validation Rules
+
+The function validates:
+- **Authentication**: User must be logged in
+- **Authorization**: User must have admin role
+- **reviewId**: Required, non-empty string
+- **replyText**: Required, non-empty string, max 4096 characters
+- **Configuration**: Valid Google Business Profile OAuth configuration must exist
+
+### Logging
+
+The function logs the following events:
+
+- **Info**: Token refresh, successful reply posts, operation details
+- **Warn**: Configuration issues
+- **Error**: API errors, authentication failures, validation errors, exceptions
+
+Example log entry:
+```
+INFO: Reply posted successfully
+  userId: abc123
+  reviewId: accounts/123/locations/456/reviews/789
+```
+
+### Testing
+
+See `../tests/postReply.test.ts` for comprehensive test scenarios covering:
+- Authentication and authorization
+- Configuration validation
+- Parameter validation (reviewId, replyText)
+- Reply text length validation
+- Special characters and Unicode handling
+- Token refresh
+- Error handling (rate limiting, API errors, not found, already replied)
+- Concurrent operations
+
 ## API Reference
 
-This function uses the Google Business Profile API (formerly Google My Business API):
-- Endpoint: `https://mybusinessaccountmanagement.googleapis.com/v1/locations/{locationId}/reviews`
-- Documentation: https://developers.google.com/my-business/reference/accountmanagement/rest
+These functions use the Google Business Profile API (formerly Google My Business API):
+
+### getReviews
+- **Endpoint**: `https://mybusinessaccountmanagement.googleapis.com/v1/locations/{locationId}/reviews`
+- **Method**: GET
+- **Documentation**: https://developers.google.com/my-business/reference/accountmanagement/rest
+
+### postReply
+- **Endpoint**: `https://mybusinessaccountmanagement.googleapis.com/v1/locations/{locationId}/reviews/{reviewId}/reply`
+- **Method**: PUT
+- **Documentation**: https://developers.google.com/my-business/reference/accountmanagement/rest
 
 ## Performance
 
+Both functions are configured with:
 - **Timeout**: 60 seconds
 - **Memory**: 256 MiB
 - **Cold Start**: ~1-2 seconds
@@ -201,6 +333,7 @@ This function uses the Google Business Profile API (formerly Google My Business 
 3. **Authorization**: Admin-only access enforced server-side
 4. **Validation**: All inputs validated before processing
 5. **Error Messages**: Sensitive details never exposed to client
+6. **Input Sanitization**: All user inputs validated and trimmed
 
 ## Monitoring
 
@@ -209,11 +342,18 @@ Consider setting up monitoring for:
 - Repeated rate limit errors (indicates usage patterns)
 - Authentication errors (indicates token/configuration problems)
 - High error rates (indicates API or configuration issues)
+- Failed reply posts (indicates review ID issues or duplicate replies)
 
 ## Future Enhancements
 
 Potential improvements for future iterations:
 - Caching mechanism to reduce API calls
+- Webhook support for real-time review notifications
+- Bulk operations for fetching all reviews
+- Review statistics and analytics
+- Support for filtering reviews by date range or rating
+- Reply templates management integrated with Firestore
+- Notification system when new reviews require response
 - Webhook support for real-time review notifications
 - Bulk operations for fetching all reviews
 - Review statistics and analytics
