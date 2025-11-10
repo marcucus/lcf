@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiTruck,
   FiStar,
+  FiDollarSign,
 } from 'react-icons/fi';
 
 interface NavItem {
@@ -32,6 +33,12 @@ export function AdminSidebar() {
       label: 'Calendrier',
       href: '/admin/calendrier',
       icon: <FiCalendar className="w-5 h-5" />,
+    },
+    {
+      label: 'Chiffre d\'affaires',
+      href: '/admin/chiffre-affaires',
+      icon: <FiDollarSign className="w-5 h-5" />,
+      adminOnly: true,
     },
     {
       label: 'Utilisateurs',
