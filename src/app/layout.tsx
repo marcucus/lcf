@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import WebVitalsMonitor from "@/components/monitoring/WebVitalsMonitor";
+import { AccessibilityChecker } from "@/components/accessibility/AccessibilityChecker";
 
 export const metadata: Metadata = {
   title: "LCF Auto Performance",
@@ -21,6 +22,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icons/icon-72x72.png",
     apple: "/icons/icon-192x192.png",
+  },
+  openGraph: {
+    title: "LCF Auto Performance",
+    description: "Garage automobile - Entretien, Réparation, Re-programmation",
+    type: "website",
+    locale: "fr_FR",
   },
 };
 
@@ -47,12 +54,16 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className="antialiased">
+        <a href="#main-content" className="skip-to-main">
+          Aller au contenu principal
+        </a>
         <WebVitalsMonitor />
+        <AccessibilityChecker />
         <ThemeProvider>
           <AuthProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
-              <main className="flex-grow">
+              <main id="main-content" className="flex-grow" role="main">
                 {children}
               </main>
               <Footer />
