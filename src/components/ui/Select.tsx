@@ -8,17 +8,28 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, children, className = '', ...props }, ref) => {
+  ({ label, error, options, children, className = '', id, ...props }, ref) => {
+    // Generate a unique ID if not provided
+    const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+    const errorId = error ? `${selectId}-error` : undefined;
+
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+          <label 
+            htmlFor={selectId}
+            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+          >
             {label}
+            {props.required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
           </label>
         )}
         <select
           ref={ref}
+          id={selectId}
           className={`input-field ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
+          aria-invalid={error ? 'true' : 'false'}
+          aria-describedby={errorId}
           {...props}
         >
           {options ? (
@@ -32,7 +43,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           )}
         </select>
         {error && (
-          <p className="mt-1 text-sm text-red-500">{error}</p>
+          <p id={errorId} className="mt-1 text-sm text-red-500" role="alert">
+            {error}
+          </p>
         )}
       </div>
     );

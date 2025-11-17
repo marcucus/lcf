@@ -11,6 +11,8 @@ module.exports = {
       colors: {
         // LCF Brand accent color
         accent: '#1CCEFF',
+        // Accessible variant for light backgrounds (WCAG AA compliant)
+        'accent-dark': '#0E677F',
         // Light theme colors
         light: {
           bg: '#FFFFFF',
