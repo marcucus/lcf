@@ -2,8 +2,9 @@
 
 import { Vehicle } from '@/types';
 import { Card } from '@/components/ui/Card';
-import { FiEdit2, FiTrash2, FiCheck } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiCheck, FiEye } from 'react-icons/fi';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -135,6 +136,18 @@ export function VehicleCard({
                 <FiTrash2 className="w-4 h-4" />
               </button>
             )}
+          </div>
+        )}
+
+        {/* Public View Button */}
+        {!isAdmin && (
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <Link href={`/vehicules/${vehicle.vehicleId}`}>
+              <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg transition-colors">
+                <FiEye className="w-4 h-4" />
+                <span className="text-sm font-semibold">Voir les détails</span>
+              </button>
+            </Link>
           </div>
         )}
       </div>
