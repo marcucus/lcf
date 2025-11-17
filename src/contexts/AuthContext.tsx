@@ -143,7 +143,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (email: string) => {
     if (!auth) throw new Error('Firebase not configured');
-    await sendPasswordResetEmail(auth, email);
+    
+    // Configure action code settings for custom branded page
+    const actionCodeSettings = {
+      // URL to redirect to after password reset
+      url: `${window.location.origin}/auth/action`,
+      handleCodeInApp: false, // Let Firebase handle the initial redirect
+    };
+    
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
   };
 
   const value: AuthContextType = {
