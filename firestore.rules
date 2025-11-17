@@ -97,8 +97,8 @@ service cloud.firestore {
     
     // Vehicles collection
     match /vehicles/{vehicleId} {
-      // Everyone can read vehicles
-      allow read: if true;
+      // Everyone can read vehicles (list and get)
+      allow read, list: if true;
       
       // Only admins can create, update, or delete vehicles
       allow create, update, delete: if isAdmin();
@@ -116,79 +116,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
     
-    // Invoices collection
-    match /invoices/{invoiceId} {
-      // Users can read their own invoices
-      allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
-        || isAdmin()
-      );
-      
-      // Only admins can create, update, or delete invoices
-      allow create, update, delete: if isAdmin();
-      
-      // Admins can read all invoices
-      allow list: if isAdmin();
-    }
-    
-      // Only admins can read invoices
-      allow read: if isAdmin();
-      
-      // Only admins can create invoices
-      allow create: if isAdmin() 
-                    && request.resource.data.createdBy == request.auth.uid;
-      
-      // Only admins can update invoices
-      allow update: if isAdmin();
-      
-      // Only admins can delete invoices
-      allow delete: if isAdmin();
-    }
-    
     // User vehicles collection (for storing customer vehicle info)
     match /userVehicles/{vehicleId} {
       // Users can read their own vehicles
-    // Quotations collection
-    match /quotations/{quotationId} {
-      // Only admins can manage quotations
-      allow read, write: if isAdmin();
-      
-      // Users can read their own quotations if linked to their userId
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-    // Quotes collection
-    match /quotes/{quoteId} {
-      // Users can read their own quotes
       allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
-        || isAdmin()
-      );
-      
-      // Only admins can create, update, or delete quotes
-      allow create, update, delete: if isAdmin();
-      
-      // Admins can read all quotes
-      allow list: if isAdmin();
-        || isAdminOrManager()
-      );
-      
-      // Only admins and managers can create quotes
-      allow create: if isAdminOrManager();
-      
-      // Only admins and managers can update quotes
-      allow update: if isAdminOrManager();
-      
-      // Only admins and managers can delete quotes
-      allow delete: if isAdminOrManager();
-      
-      // Admins and managers can list all quotes
-      allow list: if isAdminOrManager();
-    }
-    
-    // Invoices collection
-    match /invoices/{invoiceId} {
-      // Users can read their own invoices
-      allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
+        resource.data.userId == request.auth.uid
         || isAdminOrManager()
       );
       
@@ -204,18 +136,89 @@ service cloud.firestore {
         || isAdminOrManager()
       );
       
-      // Admins can read all user vehicles
-      // Only admins and managers can create invoices
-      allow create: if isAdminOrManager();
+      // Admins and managers can read all user vehicles
+      allow list: if isAdminOrManager();
+    }
+    
+    // Quotations collection
+    match /quotations/{quotationId} {
+      // Only admins can manage quotations
+      allow read, write: if isAdmin();
       
-      // Only admins and managers can update invoices
-      allow update: if isAdminOrManager();
+      // Users can read their own quotations if linked to their userId
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Quotes collection
+    match /quotes/{quoteId} {
+      // Users can read their own quotes
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdminOrManager()
+      );
       
-      // Only admins and managers can delete invoices
-      allow delete: if isAdminOrManager();
+      // Only admins and managers can create, update, or delete quotes
+      allow create, update, delete: if isAdminOrManager();
+      
+      // Admins and managers can list all quotes
+      allow list: if isAdminOrManager();
+    }
+    
+    // Invoices collection
+    match /invoices/{invoiceId} {
+      // Users can read their own invoices
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdminOrManager()
+      );
+      
+      // Only admins and managers can create, update, or delete invoices
+      allow create, update, delete: if isAdminOrManager();
       
       // Admins and managers can list all invoices
       allow list: if isAdminOrManager();
+    }
+    
+    // Loyalty transactions collection
+    match /loyaltyTransactions/{transactionId} {
+      // Users can read their own transactions
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdmin()
+      );
+      
+      // Only admins can create, update, or delete transactions
+      allow create, update, delete: if isAdmin();
+      
+      // Admins can list all transactions
+      allow list: if isAdmin();
+    }
+    
+    // Rewards collection
+    match /rewards/{rewardId} {
+      // Everyone can read active rewards
+      allow read: if true;
+      
+      // Only admins can create, update, or delete rewards
+      allow create, update, delete: if isAdmin();
+      
+      // Everyone can list rewards
+      allow list: if true;
+    }
+    
+    // User rewards collection
+    match /userRewards/{userRewardId} {
+      // Users can read their own rewards
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid 
+        || isAdmin()
+      );
+      
+      // Only admins can create or update user rewards
+      allow create, update: if isAdmin();
+      
+      // Admins can list all user rewards
+      allow list: if isAdmin();
     }
   }
 }
