@@ -375,12 +375,12 @@ export default function Home() {
                 {
                   icon: <FiMapPin className="w-6 h-6 text-accent" />,
                   title: 'Adresse',
-                  content: <>123 Rue de l&apos;Automobile<br />75000 Paris<br />France</>
+                  content: <>6 Rue de la Forteresse<br/> 41330 Saint-Bohaire<br />France</>
                 },
                 {
                   icon: <FiPhone className="w-6 h-6 text-accent" />,
                   title: 'Téléphone',
-                  content: <a href="tel:+33123456789" className="hover:text-accent transition-colors">01 23 45 67 89</a>
+                  content: <a href="tel:+33761888263" className="hover:text-accent transition-colors">07 61 88 82 63</a>
                 },
                 {
                   icon: <FiMail className="w-6 h-6 text-accent" />,
@@ -456,7 +456,7 @@ export default function Home() {
             {/* Map */}
             <div className="h-[600px] rounded-2xl overflow-hidden shadow-2xl animate-on-scroll hover-lift">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.9916256937586!2d2.292292615674447!3d48.85837007928746!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66fec70fb1483%3A0x40b82c3688c9460!2sParis%2C%20France!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2688.333827724315!2d1.2197938770005707!3d47.63907937119286!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e35b0076ed074b%3A0xdc744fb61db73af3!2sLCF%20AUTO%20PERFORMANCE!5e0!3m2!1sfr!2sfr!4v1771265745970!5m2!1sfr!2sfr"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

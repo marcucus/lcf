@@ -54,13 +54,13 @@ export function Footer() {
               <li className="flex items-start space-x-2">
                 <FiMapPin className="w-4 h-4 mt-1 text-accent flex-shrink-0" aria-hidden="true" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  123 Rue de l&apos;Automobile, 75000 Paris
+                  6 Rue de la Forteresse 41330 Saint-Bohaire France
                 </span>
               </li>
               <li className="flex items-center space-x-2">
                 <FiPhone className="w-4 h-4 text-accent flex-shrink-0" aria-hidden="true" />
-                <a href="tel:+33123456789" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors" aria-label="Call us at 01 23 45 67 89">
-                  01 23 45 67 89
+                <a href="tel:+33761888263" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors" aria-label="Call us at 01 23 45 67 89">
+                  07 61 88 82 63
                 </a>
               </li>
               <li className="flex items-center space-x-2">
