@@ -80,7 +80,7 @@ export function Header() {
                         Mon tableau de bord
                       </Link>
                       <Link
-                        href="/vehicules"
+                        href="/dashboard/vehicules"
                         className="flex items-center space-x-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
                         onClick={() => setIsUserMenuOpen(false)}
                         role="menuitem"
@@ -160,7 +160,7 @@ export function Header() {
                       Mon tableau de bord
                     </button>
                   </Link>
-                  <Link href="/vehicules" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/dashboard/vehicules" onClick={() => setIsMenuOpen(false)}>
                     <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2" role="menuitem">
                       <FiTruck className="w-4 h-4" aria-hidden="true" />
                       <span>Mes véhicules</span>

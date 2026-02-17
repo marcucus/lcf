@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
 import { UserRole } from '@/types';
 
@@ -18,16 +18,21 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
+        // Sauvegarder l'URL actuelle pour rediriger après connexion
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('redirectAfterLogin', pathname);
+        }
         router.push(redirectTo);
       } else if (allowedRoles && !allowedRoles.includes(user.role)) {
         router.push('/unauthorized');
       }
     }
-  }, [user, loading, allowedRoles, redirectTo, router]);
+  }, [user, loading, allowedRoles, redirectTo, router, pathname]);
 
   if (loading) {
     return (

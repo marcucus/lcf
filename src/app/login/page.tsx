@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -14,8 +14,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState('/dashboard');
   const { signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    // Récupérer l'URL de redirection depuis sessionStorage
+    if (typeof window !== 'undefined') {
+      const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+      if (savedRedirect) {
+        setRedirectUrl(savedRedirect);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +35,11 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
-      router.push('/dashboard');
+      // Nettoyer le sessionStorage et rediriger
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('redirectAfterLogin');
+      }
+      router.push(redirectUrl);
     } catch (err: any) {
       setError('Email ou mot de passe incorrect');
       console.error('Login error:', err);
@@ -39,7 +54,11 @@ export default function LoginPage() {
 
     try {
       await signInWithGoogle();
-      router.push('/dashboard');
+      // Nettoyer le sessionStorage et rediriger
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('redirectAfterLogin');
+      }
+      router.push(redirectUrl);
     } catch (err: any) {
       setError('Erreur lors de la connexion avec Google');
       console.error('Google sign-in error:', err);

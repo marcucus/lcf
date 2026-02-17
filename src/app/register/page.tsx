@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -19,8 +19,19 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState('/dashboard');
   const { signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    // Récupérer l'URL de redirection depuis sessionStorage
+    if (typeof window !== 'undefined') {
+      const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+      if (savedRedirect) {
+        setRedirectUrl(savedRedirect);
+      }
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -70,7 +81,11 @@ export default function RegisterPage() {
         formData.firstName,
         formData.lastName
       );
-      router.push('/dashboard');
+      // Nettoyer le sessionStorage et rediriger
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('redirectAfterLogin');
+      }
+      router.push(redirectUrl);
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         setError('Cette adresse email est déjà utilisée');
@@ -89,7 +104,11 @@ export default function RegisterPage() {
 
     try {
       await signInWithGoogle();
-      router.push('/dashboard');
+      // Nettoyer le sessionStorage et rediriger
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('redirectAfterLogin');
+      }
+      router.push(redirectUrl);
     } catch (err: any) {
       setError('Erreur lors de l\'inscription avec Google');
       console.error('Google sign-in error:', err);

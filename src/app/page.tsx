@@ -159,13 +159,14 @@ export default function Home() {
                   <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <button 
+              <Button 
                 onClick={() => scrollToSection('services')}
                 className="btn-outline btn-lg group"
+                variant='outline'
               >
                 Découvrir nos services
                 <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>

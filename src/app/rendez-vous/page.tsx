@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -15,7 +16,7 @@ import { getUserVehicles } from '@/lib/firestore/userVehicles';
 
 type Step = 1 | 2 | 3 | 4;
 
-export default function RendezVousPage() {
+function RendezVousPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -45,6 +46,19 @@ export default function RendezVousPage() {
     '10:00', '10:30', '11:00', '11:30',
     '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
   ];
+
+  // Check if a time slot is in the past
+  const isTimeSlotPassed = (day: Date, time: string): boolean => {
+    const now = new Date();
+    const [hours, minutes] = time.split(':').map(Number);
+    const slotDateTime = new Date(day);
+    slotDateTime.setHours(hours, minutes, 0, 0);
+    
+    // Add 1 hour buffer - slot is considered passed if it's less than 1 hour from now
+    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+    
+    return slotDateTime < oneHourFromNow;
+  };
 
   // Load user vehicles
   useEffect(() => {
@@ -334,6 +348,7 @@ export default function RendezVousPage() {
                 {weekDays.map((day, index) => {
                   const isToday = isSameDay(day, new Date());
                   const hasSelection = selectedDate && isSameDay(selectedDate, day);
+                  const isPastDay = day < new Date(new Date().setHours(0, 0, 0, 0));
                   
                   return (
                     <div 
@@ -341,6 +356,8 @@ export default function RendezVousPage() {
                       className={`rounded-xl border-2 overflow-hidden transition-all ${
                         hasSelection 
                           ? 'border-accent shadow-lg shadow-accent/20' 
+                          : isPastDay
+                          ? 'border-gray-200 dark:border-gray-700 opacity-60'
                           : 'border-gray-200 dark:border-gray-700'
                       }`}
                     >
@@ -350,6 +367,8 @@ export default function RendezVousPage() {
                           ? 'bg-gradient-to-r from-accent to-blue-600 text-white' 
                           : isToday
                           ? 'bg-gradient-to-r from-blue-500 to-accent text-white'
+                          : isPastDay
+                          ? 'bg-gray-100 dark:bg-gray-800/50'
                           : 'bg-gray-50 dark:bg-gray-800'
                       }`}>
                         <div className="text-xs font-bold uppercase tracking-wider mb-1">
@@ -367,12 +386,16 @@ export default function RendezVousPage() {
                       <div className="p-3 space-y-2 bg-white dark:bg-gray-900 max-h-96 overflow-y-auto custom-scrollbar">
                         {timeSlots.map((time) => {
                           const isSelected = selectedDate && isSameDay(selectedDate, day) && formData.time === time;
+                          const isPassed = isTimeSlotPassed(day, time);
                           return (
                             <button
                               key={time}
-                              onClick={() => handleTimeSlotSelect(day, time)}
+                              onClick={() => !isPassed && handleTimeSlotSelect(day, time)}
+                              disabled={isPassed}
                               className={`w-full py-2.5 px-3 rounded-lg transition-all duration-200 text-sm font-medium ${
-                                isSelected
+                                isPassed
+                                  ? 'bg-gray-100 dark:bg-gray-800/50 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50'
+                                  : isSelected
                                   ? 'bg-accent text-white shadow-md transform scale-105'
                                   : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent hover:shadow-sm'
                               }`}
@@ -380,7 +403,7 @@ export default function RendezVousPage() {
                               <div className="flex items-center justify-center gap-2">
                                 <FiClock className="w-3.5 h-3.5" />
                                 {time}
-                                {isSelected && <FiCheckCircle className="w-3.5 h-3.5" />}
+                                {isSelected && !isPassed && <FiCheckCircle className="w-3.5 h-3.5" />}
                               </div>
                             </button>
                           );
@@ -746,5 +769,13 @@ export default function RendezVousPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RendezVousPageWithAuth() {
+  return (
+    <ProtectedRoute>
+      <RendezVousPage />
+    </ProtectedRoute>
   );
 }
