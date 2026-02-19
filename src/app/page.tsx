@@ -17,10 +17,12 @@ import {
   FiPhone,
   FiMail,
   FiClock,
-  FiFacebook,
   FiInstagram,
   FiArrowRight
 } from 'react-icons/fi';
+
+import { MdOutlineConnectWithoutContact } from "react-icons/md";
+
 
 export default function Home() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -142,7 +144,7 @@ export default function Home() {
               </div>
             </div>
             
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up">
               <span className="bg-gradient-to-r from-blue-600 via-accent to-blue-500 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
                 LCF Auto Performance
               </span>
@@ -386,7 +388,7 @@ export default function Home() {
                 {
                   icon: <FiMail className="w-6 h-6 text-accent" />,
                   title: 'Email',
-                  content: <a href="mailto:contact@lcf-auto.fr" className="hover:text-accent transition-colors">contact@lcf-auto.fr</a>
+                  content: <a href="mailto:lcfautoperformance@outlook.fr" className="hover:text-accent transition-colors break-all">lcfautoperformance@outlook.fr</a>
                 },
                 {
                   icon: <FiClock className="w-6 h-6 text-accent" />,
@@ -425,7 +427,7 @@ export default function Home() {
               <Card className="animate-on-scroll">
                 <div className="flex items-start space-x-4">
                   <div className="p-3 bg-accent/10 rounded-lg flex-shrink-0">
-                    <FiFacebook className="w-6 h-6 text-accent" />
+                    <MdOutlineConnectWithoutContact className="w-6 h-6 text-accent" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
@@ -433,15 +435,7 @@ export default function Home() {
                     </h3>
                     <div className="flex space-x-4">
                       <a
-                        href="https://facebook.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-accent hover:text-white transition-all duration-300 transform hover:scale-110"
-                      >
-                        <FiFacebook className="w-5 h-5" />
-                      </a>
-                      <a
-                        href="https://instagram.com"
+                        href="https://www.instagram.com/lcf_auto_performance/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-accent hover:text-white transition-all duration-300 transform hover:scale-110"

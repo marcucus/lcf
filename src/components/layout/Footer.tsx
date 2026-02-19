@@ -65,8 +65,8 @@ export function Footer() {
               </li>
               <li className="flex items-center space-x-2">
                 <FiMail className="w-4 h-4 text-accent flex-shrink-0" aria-hidden="true" />
-                <a href="mailto:contact@lcf-auto.fr" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors" aria-label="Send us an email">
-                  contact@lcf-auto.fr
+                <a href="mailto:lcfautoperformance@outlook.fr" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors break-all" aria-label="Send us an email">
+                  lcfautoperformance@outlook.fr
                 </a>
               </li>
             </ul>
@@ -84,16 +84,7 @@ export function Footer() {
             </p>
             <div className="flex space-x-4" role="navigation" aria-label="Social media">
               <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-accent hover:text-white transition-colors"
-                aria-label="Visit our Facebook page"
-              >
-                <FiFacebook className="w-5 h-5" aria-hidden="true" />
-              </a>
-              <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/lcf_auto_performance/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-accent hover:text-white transition-colors"

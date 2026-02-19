@@ -365,7 +365,7 @@ export function generateAppointmentConfirmationEmail(data: {
       <div class="contact-info">
         <p>📍 Adresse du garage</p>
         <p>📞 Téléphone : XX XX XX XX XX</p>
-        <p>✉️ Email : contact@lcfauto.fr</p>
+        <p>✉️ Email : lcfautoperformance@outlook.fr</p>
       </div>
       <p style="margin-top: 20px; font-size: 12px;">
         Cet email a été envoyé automatiquement, merci de ne pas y répondre.
@@ -407,7 +407,7 @@ Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contac
 LCF AUTO PERFORMANCE
 Adresse du garage
 Téléphone : XX XX XX XX XX
-Email : contact@lcfauto.fr
+Email : lcfautoperformance@outlook.fr
 
 Cet email a été envoyé automatiquement, merci de ne pas y répondre.
   `;

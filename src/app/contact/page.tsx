@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/Card';
-import { FiMapPin, FiPhone, FiMail, FiClock, FiFacebook, FiInstagram } from 'react-icons/fi';
+import { FiMapPin, FiPhone, FiMail, FiClock, FiInstagram } from 'react-icons/fi';
+import { MdOutlineConnectWithoutContact } from 'react-icons/md';
 
 export default function ContactPage() {
   return (
@@ -65,8 +66,8 @@ export default function ContactPage() {
                     <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
                       Email
                     </h3>
-                    <a href="mailto:contact@lcf-auto.fr" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors">
-                      contact@lcf-auto.fr
+                    <a href="mailto:lcfautoperformance@outlook.fr" className="text-gray-600 dark:text-gray-400 hover:text-accent transition-colors break-all">
+                      lcfautoperformance@outlook.fr
                     </a>
                   </div>
                 </div>
@@ -95,7 +96,7 @@ export default function ContactPage() {
               <Card>
                 <div className="flex items-start space-x-4">
                   <div className="p-3 bg-accent/10 rounded-lg">
-                    <FiFacebook className="w-6 h-6 text-accent" />
+                    <MdOutlineConnectWithoutContact className="w-6 h-6 text-accent" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
@@ -103,15 +104,7 @@ export default function ContactPage() {
                     </h3>
                     <div className="flex space-x-4">
                       <a
-                        href="https://facebook.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-accent hover:text-white transition-colors"
-                      >
-                        <FiFacebook className="w-5 h-5" />
-                      </a>
-                      <a
-                        href="https://instagram.com"
+                        href="https://www.instagram.com/lcf_auto_performance/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-accent hover:text-white transition-colors"

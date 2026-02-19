@@ -34,7 +34,7 @@ LCF AUTO PERFORMANCE
 
 **Adresse email de réponse (optionnel) :**
 ```
-contact@lcf-auto-performance.fr
+lcfautoperformance@outlook.fr
 ```
 
 **Objet de l'email :**
@@ -157,7 +157,7 @@ Réinitialisation de votre mot de passe LCF AUTO PERFORMANCE
                                             📞 <a href="tel:+33123456789" style="color: #1CCEFF; text-decoration: none;">01 23 45 67 89</a>
                                         </p>
                                         <p style="margin: 0 0 15px 0; color: #6c757d; font-size: 13px;">
-                                            📧 <a href="mailto:contact@lcf-auto-performance.fr" style="color: #1CCEFF; text-decoration: none;">contact@lcf-auto-performance.fr</a>
+                                            📧 <a href="mailto:lcfautoperformance@outlook.fr" style="color: #1CCEFF; text-decoration: none;">lcfautoperformance@outlook.fr</a>
                                         </p>
                                         
                                         <!-- Social Links -->
