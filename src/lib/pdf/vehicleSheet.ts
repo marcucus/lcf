@@ -188,7 +188,7 @@ export async function generateVehicleSheet(vehicle: Vehicle): Promise<void> {
   doc.setFont('helvetica', 'normal');
   setColor(lightGray);
   doc.text('Lun-Ven: 10:00-12:00, 14:00-18:00', pageWidth / 2, footerY + 14, { align: 'center' });
-  doc.text('Contact: info@lcfautoperformance.fr', pageWidth / 2, footerY + 19, { align: 'center' });
+  doc.text('Contact: lcfautoperformance@outlook.fr', pageWidth / 2, footerY + 19, { align: 'center' });
 
   // Save the PDF
   const fileName = `${vehicle.make}_${vehicle.model}_${vehicle.year}.pdf`

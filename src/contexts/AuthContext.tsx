@@ -15,6 +15,7 @@ import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/config';
 import { User, AuthContextType, UserRole } from '@/types';
 import { awardWelcomeBonus } from '@/lib/firestore/loyalty';
+import { sendEmailAsync } from '@/lib/email/emailClient';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -88,7 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Award welcome bonus
     try {
-      await awardWelcomeBonus(userCredential.user.uid);
+      const bonusPoints = await awardWelcomeBonus(userCredential.user.uid);
+
+      // #1 — Welcome email
+      sendEmailAsync('WELCOME', { email, firstName });
+
+
     } catch (error) {
       console.error('Error awarding welcome bonus:', error);
     }
@@ -126,7 +132,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Award welcome bonus
       try {
-        await awardWelcomeBonus(userCredential.user.uid);
+        const bonusPoints = await awardWelcomeBonus(userCredential.user.uid);
+
+        // #1 — Welcome email (new Google users)
+        sendEmailAsync('WELCOME', {
+          email: newUser.email,
+          firstName: newUser.firstName || newUser.email,
+        });
+
+
       } catch (error) {
         console.error('Error awarding welcome bonus:', error);
       }

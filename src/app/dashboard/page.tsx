@@ -12,6 +12,7 @@ import { FiCalendar, FiClock, FiSettings, FiX, FiEdit } from 'react-icons/fi';
 import { Appointment } from '@/types';
 import { getUserAppointments, cancelAppointment, canModifyAppointment } from '@/lib/firestore/appointments';
 import { getUserLoyaltyPoints } from '@/lib/firestore/loyalty';
+import { sendEmailAsync } from '@/lib/email/emailClient';
 
 function DashboardContent() {
   const { user } = useAuth();
@@ -53,8 +54,8 @@ function DashboardContent() {
     }
   };
 
-  const handleCancelAppointment = async (appointmentId: string, dateTime: any) => {
-    const appointmentDate = dateTime.toDate();
+  const handleCancelAppointment = async (appointment: Appointment) => {
+    const appointmentDate = appointment.dateTime.toDate();
     
     if (!canModifyAppointment(appointmentDate)) {
       alert('Vous ne pouvez pas annuler un rendez-vous moins de 24h avant. Veuillez nous contacter directement.');
@@ -66,7 +67,23 @@ function DashboardContent() {
     }
 
     try {
-      await cancelAppointment(appointmentId);
+      await cancelAppointment(appointment.appointmentId);
+
+      // #8 — Cancellation confirmation to the user
+      if (user?.email) {
+        sendEmailAsync('APPOINTMENT_CANCELLED', {
+          email: user.email,
+          firstName: user.firstName || user.email,
+          serviceType: appointment.serviceType,
+          dateTime: appointment.dateTime.toDate().toISOString(),
+          vehicleInfo: {
+            make: appointment.vehicleInfo.make,
+            model: appointment.vehicleInfo.model,
+            plate: appointment.vehicleInfo.plate,
+          },
+        });
+      }
+
       await loadAppointments();
     } catch (error) {
       console.error('Error cancelling appointment:', error);
@@ -188,7 +205,7 @@ function DashboardContent() {
                         </div>
                         {canModify && (
                           <button
-                            onClick={() => handleCancelAppointment(appointment.appointmentId, appointment.dateTime)}
+                            onClick={() => handleCancelAppointment(appointment)}
                             className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                             title="Annuler"
                           >

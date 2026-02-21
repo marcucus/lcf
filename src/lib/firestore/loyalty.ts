@@ -490,7 +490,7 @@ export async function awardPointsForAppointment(userId: string, appointmentId: s
 /**
  * Award welcome bonus points to new user
  */
-export async function awardWelcomeBonus(userId: string): Promise<void> {
+export async function awardWelcomeBonus(userId: string): Promise<number> {
   try {
     const settings = await getLoyaltySettings();
     const points = settings.welcomeBonusPoints || 0;
@@ -503,6 +503,8 @@ export async function awardWelcomeBonus(userId: string): Promise<void> {
         'Welcome bonus - Thank you for joining!'
       );
     }
+
+    return points;
   } catch (error) {
     console.error('Error awarding welcome bonus:', error);
     throw error;

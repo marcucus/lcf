@@ -26,6 +26,8 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { awardPointsForAppointment, getLoyaltySettings } from '@/lib/firestore/loyalty';
+import { sendEmailAsync } from '@/lib/email/emailClient';
 
 function CalendarContent() {
   const { user, isAgendaManager, isAdmin } = useRole();
@@ -169,6 +171,22 @@ function CalendarContent() {
     try {
       const appointmentRef = doc(db, 'appointments', appointment.appointmentId);
       await deleteDoc(appointmentRef);
+
+      // #10 — Notify the client that the garage deleted their appointment
+      const clientUser = clients.find((c) => c.uid === appointment.userId);
+      if (clientUser?.email) {
+        sendEmailAsync('APPOINTMENT_DELETED', {
+          email: clientUser.email,
+          firstName: clientUser.firstName || clientUser.email,
+          serviceType: appointment.serviceType,
+          dateTime: appointment.dateTime.toDate().toISOString(),
+          vehicleInfo: {
+            make: appointment.vehicleInfo.make,
+            model: appointment.vehicleInfo.model,
+            plate: appointment.vehicleInfo.plate,
+          },
+        });
+      }
     } catch (error) {
       console.error('Error deleting appointment:', error);
       alert('Erreur lors de la suppression du rendez-vous');
@@ -202,6 +220,12 @@ function CalendarContent() {
           'appointments',
           selectedAppointment.appointmentId
         );
+
+        const isBeingCompleted =
+          data.status === 'completed' && selectedAppointment.status !== 'completed';
+        const isBeingRescheduled =
+          data.dateTime.getTime() !== selectedAppointment.dateTime.toDate().getTime();
+
         await updateDoc(appointmentRef, {
           customerName: data.customerName,
           serviceType: data.serviceType,
@@ -210,6 +234,51 @@ function CalendarContent() {
           customerNotes: data.customerNotes || '',
           status: data.status || 'confirmed',
         });
+
+        const clientUser = clients.find((c) => c.uid === selectedAppointment.userId);
+
+        if (isBeingCompleted && clientUser?.email) {
+          // Award loyalty points
+          let pointsEarned = 0;
+          try {
+            await awardPointsForAppointment(
+              selectedAppointment.userId,
+              selectedAppointment.appointmentId
+            );
+            const settings = await getLoyaltySettings();
+            pointsEarned = settings.pointsPerAppointment;
+          } catch (e) {
+            console.error('Error awarding points:', e);
+          }
+
+          // #13 — Completion email + points earned
+          sendEmailAsync('APPOINTMENT_COMPLETED', {
+            email: clientUser.email,
+            firstName: clientUser.firstName || clientUser.email,
+            serviceType: selectedAppointment.serviceType,
+            dateTime: selectedAppointment.dateTime.toDate().toISOString(),
+            vehicleInfo: {
+              make: selectedAppointment.vehicleInfo.make,
+              model: selectedAppointment.vehicleInfo.model,
+              plate: selectedAppointment.vehicleInfo.plate,
+            },
+            pointsEarned,
+          });
+        } else if (isBeingRescheduled && clientUser?.email) {
+          // #12 — Reschedule notification
+          sendEmailAsync('APPOINTMENT_RESCHEDULED', {
+            email: clientUser.email,
+            firstName: clientUser.firstName || clientUser.email,
+            serviceType: data.serviceType,
+            oldDateTime: selectedAppointment.dateTime.toDate().toISOString(),
+            newDateTime: data.dateTime.toISOString(),
+            vehicleInfo: {
+              make: data.vehicleInfo.make,
+              model: data.vehicleInfo.model,
+              plate: data.vehicleInfo.plate,
+            },
+          });
+        }
       }
 
       setModalOpen(false);

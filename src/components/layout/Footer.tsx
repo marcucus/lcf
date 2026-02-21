@@ -97,6 +97,11 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-light-border dark:border-dark-border text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-1 mb-3">
+            <Link href="/mentions-legales" className="hover:text-accent transition-colors">Mentions légales</Link>
+            <Link href="/politique-confidentialite" className="hover:text-accent transition-colors">Politique de confidentialité</Link>
+            <Link href="/conditions-utilisation" className="hover:text-accent transition-colors">Conditions d&apos;utilisation</Link>
+          </div>
           <p>&copy; {new Date().getFullYear()} LCF AUTO PERFORMANCE - Tous droits réservés</p>
         </div>
       </div>

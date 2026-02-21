@@ -19,6 +19,7 @@ import {
 import { getAllUsers } from '@/lib/firestore/users';
 import { getAllAppointments } from '@/lib/firestore/appointments';
 import { FiPlus, FiFilter, FiMail, FiAlertCircle } from 'react-icons/fi';
+import { sendEmailAndWait } from '@/lib/email/emailClient';
 
 function QuotationsManagementPage() {
   const { user } = useAuth();
@@ -147,20 +148,35 @@ function QuotationsManagementPage() {
   };
 
   const handleSendEmail = async (quotation: Quotation) => {
-    // Placeholder for email sending functionality
-    // This will be implemented with Cloud Functions
     try {
       setError(null);
-      // TODO: Call Cloud Function to send email
+
+      // #14 — Send the quotation by email to the client
+      const emailResult = await sendEmailAndWait('QUOTATION_SENT', {
+        clientEmail: quotation.clientEmail,
+        clientName: quotation.clientName,
+        quotationNumber: quotation.quotationNumber,
+        items: quotation.items.map((item) => ({
+          description: item.description,
+          totalWithTax: item.totalWithTax,
+        })),
+        totalAmount: quotation.totalAmount,
+        validUntil: quotation.validUntil
+          ? quotation.validUntil.toDate().toISOString()
+          : null,
+      });
+
+      if (!emailResult.success) {
+        throw new Error(emailResult.error || 'Erreur inconnue');
+      }
+
       await updateQuotationStatus(quotation.quotationId, 'sent');
-      setSuccessMessage(
-        'Devis marqué comme envoyé. La fonctionnalité d\'envoi d\'email sera implémentée via Cloud Functions.'
-      );
+      setSuccessMessage(`Devis envoyé par email à ${quotation.clientEmail} avec succès !`);
       await loadData();
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
       console.error('Error sending email:', err);
-      setError('Erreur lors de l\'envoi du devis');
+      setError('Erreur lors de l\'envoi du devis par email');
     }
   };
 

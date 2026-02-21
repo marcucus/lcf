@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getInvoices, searchInvoices, deleteInvoice } from '@/lib/firestore/invoices';
+import { getInvoices, searchInvoices, deleteInvoice, markInvoiceAsSent } from '@/lib/firestore/invoices';
 import { Invoice, InvoiceStatus } from '@/types';
 import { FiSearch, FiPlus, FiEye, FiEdit2, FiTrash2, FiMail, FiFilter } from 'react-icons/fi';
+import { sendEmailAndWait } from '@/lib/email/emailClient';
 
 export default function FacturesPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function FacturesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [sendingInvoiceId, setSendingInvoiceId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -63,6 +65,35 @@ export default function FacturesPage() {
     } catch (error) {
       console.error('Error deleting invoice:', error);
       alert('Erreur lors de la suppression de la facture');
+    }
+  };
+
+  const handleSendInvoiceEmail = async (invoice: Invoice) => {
+    setSendingInvoiceId(invoice.invoiceId);
+    try {
+      // #17 — Send the invoice by email to the client
+      const result = await sendEmailAndWait('INVOICE_SENT', {
+        customerEmail: invoice.customerEmail,
+        customerName: invoice.customerName,
+        invoiceNumber: invoice.invoiceNumber,
+        items: invoice.items.map((item) => ({
+          description: item.description,
+          totalWithTax: item.totalWithTax,
+        })),
+        total: invoice.total,
+        dueDate: invoice.dueDate ? invoice.dueDate.toDate().toISOString() : null,
+      });
+
+      if (!result.success) throw new Error(result.error || 'Erreur inconnue');
+
+      await markInvoiceAsSent(invoice.invoiceId);
+      await loadInvoices();
+      alert(`Facture envoyée par email à ${invoice.customerEmail}`);
+    } catch (error) {
+      console.error('Error sending invoice:', error);
+      alert('Erreur lors de l\'envoi de la facture');
+    } finally {
+      setSendingInvoiceId(null);
     }
   };
 
@@ -256,8 +287,9 @@ export default function FacturesPage() {
                         </button>
                         {invoice.status !== 'sent' && (
                           <button
-                            onClick={() => router.push(`/admin/factures/${invoice.invoiceId}/send`)}
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                            onClick={() => handleSendInvoiceEmail(invoice)}
+                            disabled={sendingInvoiceId === invoice.invoiceId}
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors disabled:opacity-50"
                             title="Envoyer par email"
                           >
                             <FiMail className="w-5 h-5" />

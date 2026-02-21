@@ -17,6 +17,7 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('/dashboard');
@@ -69,6 +70,11 @@ export default function RegisterPage() {
     const passwordError = validatePassword(formData.password);
     if (passwordError) {
       setError(passwordError);
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setError('Vous devez accepter les conditions d\'utilisation et la politique de confidentialité.');
       return;
     }
 
@@ -198,7 +204,26 @@ export default function RegisterPage() {
               Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.
             </div>
 
-            <Button type="submit" fullWidth disabled={loading}>
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-accent flex-shrink-0"
+                required
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                J&apos;ai lu et j&apos;accepte les{' '}
+                <a href="/conditions-utilisation" target="_blank" className="text-accent hover:underline font-medium">
+                  conditions d&apos;utilisation
+                </a>{' '}et la{' '}
+                <a href="/politique-confidentialite" target="_blank" className="text-accent hover:underline font-medium">
+                  politique de confidentialité
+                </a>{' '}de LCF Auto Performance. <span className="text-red-500">*</span>
+              </span>
+            </label>
+
+            <Button type="submit" fullWidth disabled={loading || !acceptedTerms}>
               {loading ? 'Inscription...' : 'S\'inscrire'}
             </Button>
           </form>

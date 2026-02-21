@@ -39,6 +39,20 @@ export async function createAppointment(
       createdAt: Timestamp.now(),
     };
 
+    // Check user hasn't exceeded the MAX_SIMULTANEOUS_APPOINTMENTS limit (pre-transaction best-effort check)
+    const limitQuery = query(
+      collection(db!, 'appointments'),
+      where('userId', '==', userId),
+      where('status', '==', 'confirmed'),
+      where('dateTime', '>=', Timestamp.fromDate(new Date()))
+    );
+    const limitSnapshot = await getDocs(limitQuery);
+    if (limitSnapshot.size >= MAX_SIMULTANEOUS_APPOINTMENTS) {
+      throw new Error(
+        `Vous avez déjà ${MAX_SIMULTANEOUS_APPOINTMENTS} rendez-vous à venir. Annulez un rendez-vous existant ou attendez qu'il soit passé pour en prendre un nouveau.`
+      );
+    }
+
     // Use transaction to ensure no double booking
     const appointmentRef = await runTransaction(db, async (transaction) => {
       // Check if slot is available
@@ -66,6 +80,32 @@ export async function createAppointment(
   } catch (error) {
     console.error('Error creating appointment:', error);
     throw error;
+  }
+}
+
+// Maximum number of simultaneous upcoming confirmed appointments per user
+export const MAX_SIMULTANEOUS_APPOINTMENTS = 3;
+
+// Get count of user's upcoming confirmed appointments (for the simultaneous limit)
+export async function getUserUpcomingAppointmentsCount(userId: string): Promise<number> {
+  if (!db) return 0;
+
+  try {
+    const appointmentsRef = collection(db, 'appointments');
+    const now = Timestamp.fromDate(new Date());
+
+    const q = query(
+      appointmentsRef,
+      where('userId', '==', userId),
+      where('status', '==', 'confirmed'),
+      where('dateTime', '>=', now)
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.size;
+  } catch (error) {
+    console.error('Error getting upcoming appointments count:', error);
+    return 0;
   }
 }
 

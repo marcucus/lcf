@@ -13,6 +13,8 @@ import { ServiceType, VehicleInfo } from '@/types';
 import { startOfWeek, addDays, format, isSameDay, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale/fr';
 import { getUserVehicles } from '@/lib/firestore/userVehicles';
+import { getUserUpcomingAppointmentsCount, MAX_SIMULTANEOUS_APPOINTMENTS } from '@/lib/firestore/appointments';
+import { sendEmailAsync } from '@/lib/email/emailClient';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -26,6 +28,8 @@ function RendezVousPage() {
   const [loadingVehicles, setLoadingVehicles] = useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [showNewVehicleForm, setShowNewVehicleForm] = useState(false);
+  const [activeAppointmentsCount, setActiveAppointmentsCount] = useState(0);
+  const [loadingActiveCount, setLoadingActiveCount] = useState(true);
   const [formData, setFormData] = useState({
     serviceType: '' as ServiceType | '',
     date: '',
@@ -59,6 +63,25 @@ function RendezVousPage() {
     
     return slotDateTime < oneHourFromNow;
   };
+
+  // Check if user has reached the simultaneous appointments limit
+  useEffect(() => {
+    const checkLimit = async () => {
+      if (!user) {
+        setLoadingActiveCount(false);
+        return;
+      }
+      try {
+        const count = await getUserUpcomingAppointmentsCount(user.uid);
+        setActiveAppointmentsCount(count);
+      } catch (error) {
+        console.error('Error checking active appointments:', error);
+      } finally {
+        setLoadingActiveCount(false);
+      }
+    };
+    checkLimit();
+  }, [user]);
 
   // Load user vehicles
   useEffect(() => {
@@ -180,6 +203,33 @@ function RendezVousPage() {
         formData.notes
       );
 
+      // #5 — Confirmation email to the user
+      sendEmailAsync('APPOINTMENT_CONFIRMED', {
+        email: user.email,
+        firstName: user.firstName,
+        serviceType: formData.serviceType,
+        dateTime: dateTime.toISOString(),
+        vehicleInfo: {
+          make: formData.vehicleMake,
+          model: formData.vehicleModel,
+          plate: formData.vehiclePlate,
+        },
+      });
+
+      // #6 — Notification to the garage
+      sendEmailAsync('APPOINTMENT_GARAGE_NOTIF', {
+        customerName: `${user.firstName} ${user.lastName}`.trim() || user.email,
+        customerEmail: user.email,
+        serviceType: formData.serviceType,
+        dateTime: dateTime.toISOString(),
+        vehicleInfo: {
+          make: formData.vehicleMake,
+          model: formData.vehicleModel,
+          plate: formData.vehiclePlate,
+        },
+        notes: formData.notes || undefined,
+      });
+
       setCurrentStep(4);
     } catch (error: any) {
       console.error('Error creating appointment:', error);
@@ -219,6 +269,41 @@ function RendezVousPage() {
           </p>
         </div>
 
+        {loadingActiveCount ? (
+          <div className="text-center py-16">
+            <div className="inline-block w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Chargement...</p>
+          </div>
+        ) : activeAppointmentsCount >= MAX_SIMULTANEOUS_APPOINTMENTS ? (
+          <Card>
+            <div className="text-center py-10 space-y-6">
+              <div className="flex justify-center">
+                <div className="w-20 h-20 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <FiAlertCircle className="w-10 h-10 text-orange-500" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                  Limite de rendez-vous atteinte
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
+                  Vous avez déjà <strong>{MAX_SIMULTANEOUS_APPOINTMENTS} rendez-vous à venir</strong>.
+                  Vous ne pouvez pas en prendre un nouveau tant que l&apos;un d&apos;eux n&apos;est pas passé
+                  ou que vous n&apos;en ayez annulé un.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button onClick={() => router.push('/dashboard')}>
+                  Gérer mes rendez-vous
+                </Button>
+                <Button onClick={() => router.push('/')} variant="outline">
+                  Retour à l&apos;accueil
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <>
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -767,6 +852,8 @@ function RendezVousPage() {
             </div>
           )}
         </Card>
+          </>
+          )}
       </div>
     </div>
   );

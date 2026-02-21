@@ -70,7 +70,7 @@ export async function sendEmail(
   const transporter = getTransporter();
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || '"LCF AUTO PERFORMANCE" <noreply@lcfauto.fr>',
+    from: process.env.EMAIL_FROM || '"LCF Auto Performance" <no-reply@lcf-auto-performance.fr>',
     to,
     subject,
     html,

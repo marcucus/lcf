@@ -50,7 +50,7 @@ export default function Home() {
     return () => {
       animatedElements.forEach((el) => observer.unobserve(el));
     };
-  }, []);
+  }, [loadingVehicles, vehicles]);
 
   // Fetch vehicles for sale
   useEffect(() => {

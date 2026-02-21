@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import InvoiceForm, { InvoiceFormData } from '@/components/admin/invoices/InvoiceForm';
 import { getInvoice, updateInvoice } from '@/lib/firestore/invoices';
 import { Invoice } from '@/types';
+import { sendEmailAsync } from '@/lib/email/emailClient';
 
 export default function EditInvoicePage() {
   const router = useRouter();
@@ -59,6 +60,20 @@ export default function EditInvoicePage() {
         dueDate: data.dueDate ? Timestamp.fromDate(data.dueDate) : undefined,
         notes: data.notes,
       });
+
+      // #19 — Send overdue reminder when status is changed to 'overdue'
+      if (data.status === 'overdue' && invoice?.status !== 'overdue') {
+        const total = data.items.reduce((sum, item) => sum + item.totalWithTax, 0);
+        sendEmailAsync('INVOICE_OVERDUE', {
+          customerEmail: data.customerEmail,
+          customerName: data.customerName,
+          invoiceNumber: invoice?.invoiceNumber ?? invoiceId,
+          total,
+          dueDate: data.dueDate
+            ? data.dueDate.toISOString()
+            : new Date().toISOString(),
+        });
+      }
 
       alert('Facture mise à jour avec succès !');
       router.push(`/admin/factures/${invoiceId}`);

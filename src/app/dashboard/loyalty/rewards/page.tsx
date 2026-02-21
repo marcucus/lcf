@@ -63,6 +63,7 @@ function RewardsContent() {
     
     try {
       await claimReward(user.uid, rewardId);
+
       alert('Récompense réclamée avec succès ! Vous la retrouverez dans l\'onglet "Mes récompenses".');
       await loadData();
       setActiveTab('claimed');

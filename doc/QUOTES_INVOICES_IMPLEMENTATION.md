@@ -65,7 +65,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 const msg = {
   to: invoice.customerEmail,
-  from: 'noreply@lcfautoperformance.com',
+  from: 'no-reply@lcf-auto-performance.com',
   subject: `Facture ${invoice.invoiceNumber} - LCF AUTO PERFORMANCE`,
   html: getInvoiceEmailTemplate(invoice),
   attachments: [
