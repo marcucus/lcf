@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Card } from '@/components/ui/Card';
@@ -15,14 +16,18 @@ import {
   updateQuotation,
   deleteQuotation,
   updateQuotationStatus,
+  regenerateQuotationToken,
 } from '@/lib/firestore/quotations';
+import { convertQuotationToInvoice } from '@/lib/firestore/invoices';
 import { getAllUsers } from '@/lib/firestore/users';
 import { getAllAppointments } from '@/lib/firestore/appointments';
 import { FiPlus, FiFilter, FiMail, FiAlertCircle } from 'react-icons/fi';
 import { sendEmailAndWait } from '@/lib/email/emailClient';
 
+
 function QuotationsManagementPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<Quotation[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -151,19 +156,21 @@ function QuotationsManagementPage() {
     try {
       setError(null);
 
-      // #14 — Send the quotation by email to the client
       const emailResult = await sendEmailAndWait('QUOTATION_SENT', {
         clientEmail: quotation.clientEmail,
         clientName: quotation.clientName,
         quotationNumber: quotation.quotationNumber,
         items: quotation.items.map((item) => ({
           description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
           totalWithTax: item.totalWithTax,
         })),
         totalAmount: quotation.totalAmount,
         validUntil: quotation.validUntil
           ? quotation.validUntil.toDate().toISOString()
           : null,
+        acceptanceToken: quotation.acceptanceToken,
       });
 
       if (!emailResult.success) {
@@ -180,12 +187,36 @@ function QuotationsManagementPage() {
     }
   };
 
-  const handleConvertToInvoice = (quotation: Quotation) => {
-    // Placeholder for invoice conversion
-    // This will be implemented when the invoice module is created
-    alert(
-      'La fonctionnalité de conversion en facture sera disponible une fois le module facture implémenté.'
-    );
+  const handleConvertToInvoice = async (quotation: Quotation) => {
+    if (!user) return;
+    if (!confirm(`Convertir le devis ${quotation.quotationNumber} en facture ?`)) return;
+
+    try {
+      setError(null);
+      const invoiceId = await convertQuotationToInvoice(user.uid, quotation);
+      setSuccessMessage(`Facture créée avec succès depuis le devis ${quotation.quotationNumber} !`);
+      await loadData();
+      setTimeout(() => setSuccessMessage(null), 5000);
+      router.push(`/admin/factures/${invoiceId}`);
+    } catch (err) {
+      console.error('Error converting quotation to invoice:', err);
+      setError('Erreur lors de la conversion du devis en facture');
+    }
+  };
+
+  const handleRegenerateToken = async (quotation: Quotation) => {
+    if (!confirm('Régénérer le lien d\'acceptation ? L\'ancien lien sera invalidé.')) return;
+
+    try {
+      setError(null);
+      await regenerateQuotationToken(quotation.quotationId);
+      setSuccessMessage('Lien d\'acceptation régénéré avec succès');
+      await loadData();
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Error regenerating token:', err);
+      setError('Erreur lors de la régénération du lien');
+    }
   };
 
   const handleEdit = (quotation: Quotation) => {
@@ -200,7 +231,12 @@ function QuotationsManagementPage() {
       notes: quotation.notes || '',
       internalNotes: quotation.internalNotes || '',
       validUntil: quotation.validUntil
-        ? new Date(quotation.validUntil.seconds * 1000).toISOString().split('T')[0]
+        ? (typeof (quotation.validUntil as any).toDate === 'function'
+          ? (quotation.validUntil as any).toDate()
+          : ((quotation.validUntil as any).seconds
+            ? new Date((quotation.validUntil as any).seconds * 1000)
+            : new Date(quotation.validUntil as any))
+        ).toISOString().split('T')[0]
         : '',
       status: quotation.status,
     };
@@ -234,22 +270,25 @@ function QuotationsManagementPage() {
             initialData={
               editingQuotation
                 ? {
-                    clientName: editingQuotation.clientName,
-                    clientEmail: editingQuotation.clientEmail,
-                    clientPhone: editingQuotation.clientPhone || '',
-                    clientAddress: editingQuotation.clientAddress || '',
-                    userId: editingQuotation.userId,
-                    appointmentId: editingQuotation.appointmentId,
-                    items: editingQuotation.items,
-                    notes: editingQuotation.notes || '',
-                    internalNotes: editingQuotation.internalNotes || '',
-                    validUntil: editingQuotation.validUntil
-                      ? new Date(editingQuotation.validUntil.seconds * 1000)
-                          .toISOString()
-                          .split('T')[0]
-                      : '',
-                    status: editingQuotation.status,
-                  }
+                  clientName: editingQuotation.clientName,
+                  clientEmail: editingQuotation.clientEmail,
+                  clientPhone: editingQuotation.clientPhone || '',
+                  clientAddress: editingQuotation.clientAddress || '',
+                  userId: editingQuotation.userId,
+                  appointmentId: editingQuotation.appointmentId,
+                  items: editingQuotation.items,
+                  notes: editingQuotation.notes || '',
+                  internalNotes: editingQuotation.internalNotes || '',
+                  validUntil: editingQuotation.validUntil
+                    ? (typeof (editingQuotation.validUntil as any).toDate === 'function'
+                      ? (editingQuotation.validUntil as any).toDate()
+                      : ((editingQuotation.validUntil as any).seconds
+                        ? new Date((editingQuotation.validUntil as any).seconds * 1000)
+                        : new Date(editingQuotation.validUntil as any))
+                    ).toISOString().split('T')[0]
+                    : '',
+                  status: editingQuotation.status,
+                }
                 : undefined
             }
             users={users}
@@ -361,6 +400,7 @@ function QuotationsManagementPage() {
               onDelete={handleDeleteQuotation}
               onSendEmail={handleSendEmail}
               onConvertToInvoice={handleConvertToInvoice}
+              onRegenerateToken={handleRegenerateToken}
             />
           ))}
         </div>

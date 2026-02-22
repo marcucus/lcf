@@ -3,7 +3,7 @@
 import { Quotation } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { FiEdit2, FiTrash2, FiMail, FiFileText, FiCheck, FiX } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiMail, FiFileText, FiCheck, FiX, FiEye } from 'react-icons/fi';
 
 interface QuotationCardProps {
   quotation: Quotation;
@@ -11,6 +11,7 @@ interface QuotationCardProps {
   onDelete: (quotationId: string) => void;
   onSendEmail: (quotation: Quotation) => void;
   onConvertToInvoice?: (quotation: Quotation) => void;
+  onRegenerateToken?: (quotation: Quotation) => void;
 }
 
 export function QuotationCard({
@@ -19,6 +20,7 @@ export function QuotationCard({
   onDelete,
   onSendEmail,
   onConvertToInvoice,
+  onRegenerateToken,
 }: QuotationCardProps) {
   const getStatusBadge = (status: string) => {
     const badges = {
@@ -160,6 +162,15 @@ export function QuotationCard({
         {/* Actions */}
         <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
           <Button
+            onClick={() => window.location.href = `/admin/devis/${quotation.quotationId}`}
+            variant="secondary"
+            size="sm"
+          >
+            <FiEye className="w-4 h-4 mr-2" />
+            Voir détail
+          </Button>
+
+          <Button
             onClick={() => onEdit(quotation)}
             variant="secondary"
             size="sm"
@@ -190,6 +201,16 @@ export function QuotationCard({
             </Button>
           )}
 
+          {onRegenerateToken && quotation.status !== 'converted' && (
+            <Button
+              onClick={() => onRegenerateToken(quotation)}
+              variant="secondary"
+              size="sm"
+              title="Régénérer le lien d'acceptation client (invalide l'ancien)"
+            >
+              🔗 Régénérer le lien
+            </Button>
+          )}
           <Button
             onClick={() => onDelete(quotation.quotationId)}
             variant="secondary"

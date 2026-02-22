@@ -15,10 +15,24 @@ import {
 import { db } from '@/lib/firebase/config';
 import { Quotation, QuotationItem, QuotationStatus } from '@/types';
 
+/** Generate a UUID v4 token for the acceptance link */
+function generateToken(): string {
+  // Works in both browser (crypto.randomUUID) and Node.js environments
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for older environments
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // Generate a unique quotation number
 async function generateQuotationNumber(): Promise<string> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   const year = new Date().getFullYear();
   const quotationsRef = collection(db, 'quotations');
   const q = query(
@@ -26,10 +40,10 @@ async function generateQuotationNumber(): Promise<string> {
     orderBy('createdAt', 'desc'),
     limit(1)
   );
-  
+
   const snapshot = await getDocs(q);
   let number = 1;
-  
+
   if (!snapshot.empty) {
     const lastQuotation = snapshot.docs[0].data() as Quotation;
     const lastNumber = lastQuotation.quotationNumber;
@@ -38,7 +52,7 @@ async function generateQuotationNumber(): Promise<string> {
       number = parseInt(match[1]) + 1;
     }
   }
-  
+
   return `DEV-${year}-${number.toString().padStart(3, '0')}`;
 }
 
@@ -50,14 +64,14 @@ function calculateTotals(items: QuotationItem[]): {
 } {
   let subtotal = 0;
   let totalTax = 0;
-  
+
   items.forEach(item => {
     const itemTotal = item.quantity * item.unitPrice;
     const itemTax = itemTotal * (item.taxRate / 100);
     subtotal += itemTotal;
     totalTax += itemTax;
   });
-  
+
   return {
     subtotal: Math.round(subtotal * 100) / 100,
     totalTax: Math.round(totalTax * 100) / 100,
@@ -83,37 +97,38 @@ export async function createQuotation(
   }
 ): Promise<string> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationNumber = await generateQuotationNumber();
     const { subtotal, totalTax, totalAmount } = calculateTotals(items);
     const now = Timestamp.now();
-    
-    const quotationData = {
+
+    const quotationData: any = {
       quotationNumber,
       status: options?.status || 'draft',
-      userId: options?.userId,
-      appointmentId: options?.appointmentId,
+      userId: options?.userId || null,
+      appointmentId: options?.appointmentId || null,
       clientName,
       clientEmail,
-      clientPhone: options?.clientPhone,
-      clientAddress: options?.clientAddress,
+      clientPhone: options?.clientPhone || null,
+      clientAddress: options?.clientAddress || null,
       items,
       subtotal,
       totalTax,
       totalAmount,
-      notes: options?.notes,
-      internalNotes: options?.internalNotes,
-      validUntil: options?.validUntil ? Timestamp.fromDate(options.validUntil) : undefined,
+      notes: options?.notes || null,
+      internalNotes: options?.internalNotes || null,
+      validUntil: options?.validUntil ? Timestamp.fromDate(options.validUntil) : null,
       convertedToInvoice: false,
+      acceptanceToken: generateToken(),
       createdAt: now,
       updatedAt: now,
       createdBy,
     };
-    
+
     const quotationsRef = collection(db, 'quotations');
     const docRef = await addDoc(quotationsRef, quotationData);
-    
+
     return docRef.id;
   } catch (error) {
     console.error('Error creating quotation:', error);
@@ -124,11 +139,11 @@ export async function createQuotation(
 // Get all quotations
 export async function getAllQuotations(): Promise<Quotation[]> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationsRef = collection(db, 'quotations');
     const q = query(quotationsRef, orderBy('createdAt', 'desc'));
-    
+
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({
       quotationId: doc.id,
@@ -143,15 +158,15 @@ export async function getAllQuotations(): Promise<Quotation[]> {
 // Get quotation by ID
 export async function getQuotationById(quotationId: string): Promise<Quotation | null> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationRef = doc(db, 'quotations', quotationId);
     const quotationDoc = await getDoc(quotationRef);
-    
+
     if (!quotationDoc.exists()) {
       return null;
     }
-    
+
     return {
       quotationId: quotationDoc.id,
       ...quotationDoc.data(),
@@ -165,7 +180,7 @@ export async function getQuotationById(quotationId: string): Promise<Quotation |
 // Get quotations by user ID
 export async function getQuotationsByUserId(userId: string): Promise<Quotation[]> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationsRef = collection(db, 'quotations');
     const q = query(
@@ -173,7 +188,7 @@ export async function getQuotationsByUserId(userId: string): Promise<Quotation[]
       where('userId', '==', userId),
       orderBy('createdAt', 'desc')
     );
-    
+
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({
       quotationId: doc.id,
@@ -188,7 +203,7 @@ export async function getQuotationsByUserId(userId: string): Promise<Quotation[]
 // Get quotations by appointment ID
 export async function getQuotationsByAppointmentId(appointmentId: string): Promise<Quotation[]> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationsRef = collection(db, 'quotations');
     const q = query(
@@ -196,7 +211,7 @@ export async function getQuotationsByAppointmentId(appointmentId: string): Promi
       where('appointmentId', '==', appointmentId),
       orderBy('createdAt', 'desc')
     );
-    
+
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({
       quotationId: doc.id,
@@ -214,10 +229,10 @@ export async function updateQuotation(
   updates: Partial<Omit<Quotation, 'quotationId' | 'quotationNumber' | 'createdAt' | 'createdBy'>>
 ): Promise<void> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationRef = doc(db, 'quotations', quotationId);
-    
+
     // Recalculate totals if items are updated
     if (updates.items) {
       const { subtotal, totalTax, totalAmount } = calculateTotals(updates.items);
@@ -225,7 +240,7 @@ export async function updateQuotation(
       updates.totalTax = totalTax;
       updates.totalAmount = totalAmount;
     }
-    
+
     await updateDoc(quotationRef, {
       ...updates,
       updatedAt: Timestamp.now(),
@@ -242,19 +257,19 @@ export async function updateQuotationStatus(
   status: QuotationStatus
 ): Promise<void> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationRef = doc(db, 'quotations', quotationId);
     const updateData: any = {
       status,
       updatedAt: Timestamp.now(),
     };
-    
+
     // Set sentAt timestamp when status changes to 'sent'
     if (status === 'sent') {
       updateData.sentAt = Timestamp.now();
     }
-    
+
     await updateDoc(quotationRef, updateData);
   } catch (error) {
     console.error('Error updating quotation status:', error);
@@ -268,7 +283,7 @@ export async function markQuotationAsConverted(
   invoiceId: string
 ): Promise<void> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationRef = doc(db, 'quotations', quotationId);
     await updateDoc(quotationRef, {
@@ -286,7 +301,7 @@ export async function markQuotationAsConverted(
 // Delete a quotation
 export async function deleteQuotation(quotationId: string): Promise<void> {
   if (!db) throw new Error('Firebase not configured');
-  
+
   try {
     const quotationRef = doc(db, 'quotations', quotationId);
     await deleteDoc(quotationRef);
@@ -294,4 +309,67 @@ export async function deleteQuotation(quotationId: string): Promise<void> {
     console.error('Error deleting quotation:', error);
     throw error;
   }
+}
+
+/**
+ * Get a quotation by its acceptance token (public, no auth required)
+ */
+export async function getQuotationByToken(token: string): Promise<Quotation | null> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const quotationsRef = collection(db, 'quotations');
+  const q = query(quotationsRef, where('acceptanceToken', '==', token), limit(1));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) return null;
+
+  return {
+    quotationId: snapshot.docs[0].id,
+    ...snapshot.docs[0].data(),
+  } as Quotation;
+}
+
+/**
+ * Accept a quotation (called from the client-facing acceptance page)
+ */
+export async function acceptQuotation(quotationId: string): Promise<void> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const quotationRef = doc(db, 'quotations', quotationId);
+  await updateDoc(quotationRef, {
+    status: 'accepted',
+    acceptedAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  });
+}
+
+/**
+ * Reject a quotation (called from the client-facing acceptance page)
+ */
+export async function rejectQuotation(quotationId: string, reason?: string): Promise<void> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const quotationRef = doc(db, 'quotations', quotationId);
+  await updateDoc(quotationRef, {
+    status: 'rejected',
+    rejectedAt: Timestamp.now(),
+    ...(reason ? { rejectionReason: reason } : {}),
+    updatedAt: Timestamp.now(),
+  });
+}
+
+/**
+ * Regenerate the acceptance token for a quotation (invalidates the old link)
+ */
+export async function regenerateQuotationToken(quotationId: string): Promise<string> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const newToken = generateToken();
+  const quotationRef = doc(db, 'quotations', quotationId);
+  await updateDoc(quotationRef, {
+    acceptanceToken: newToken,
+    updatedAt: Timestamp.now(),
+  });
+
+  return newToken;
 }

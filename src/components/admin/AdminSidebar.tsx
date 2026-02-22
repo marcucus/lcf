@@ -11,6 +11,11 @@ import {
   FiStar,
   FiFileText,
   FiDollarSign,
+  FiClipboard,
+  FiTrendingUp,
+  FiArchive,
+  FiGift,
+  FiTool,
 } from 'react-icons/fi';
 
 interface NavItem {
@@ -36,27 +41,27 @@ export function AdminSidebar() {
       icon: <FiCalendar className="w-5 h-5" />,
     },
     {
-      label: 'Chiffre d\'affaires',
-      href: '/admin/chiffre-affaires',
-      icon: <FiDollarSign className="w-5 h-5" />,
+      label: 'Devis',
+      href: '/admin/devis',
+      icon: <FiClipboard className="w-5 h-5" />,
       adminOnly: true,
     },
     {
-      label: 'Utilisateurs',
-      href: '/admin/utilisateurs',
-      icon: <FiUsers className="w-5 h-5" />,
-      adminOnly: true,
-    },
-    {
-      label: 'Véhicules',
-      href: '/admin/vehicules',
-      icon: <FiTruck className="w-5 h-5" />,
+      label: 'Suivi des travaux',
+      href: '/admin/suivi',
+      icon: <FiTool className="w-5 h-5" />,
       adminOnly: true,
     },
     {
       label: 'Factures',
       href: '/admin/factures',
       icon: <FiFileText className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
+      label: "Chiffre d'affaires",
+      href: '/admin/chiffre-affaires',
+      icon: <FiTrendingUp className="w-5 h-5" />,
       adminOnly: true,
     },
     {
@@ -72,9 +77,21 @@ export function AdminSidebar() {
       adminOnly: true,
     },
     {
-      label: 'Devis',
-      href: '/admin/devis',
-      icon: <FiFileText className="w-5 h-5" />,
+      label: 'Utilisateurs',
+      href: '/admin/utilisateurs',
+      icon: <FiUsers className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
+      label: 'Véhicules',
+      href: '/admin/vehicules',
+      icon: <FiTruck className="w-5 h-5" />,
+      adminOnly: true,
+    },
+    {
+      label: 'Programme fidélité',
+      href: '/admin/loyalty',
+      icon: <FiGift className="w-5 h-5" />,
       adminOnly: true,
     },
   ];
@@ -105,10 +122,9 @@ export function AdminSidebar() {
                   className={`
                     flex items-center space-x-3 px-3 py-3 rounded-lg
                     transition-all duration-200
-                    ${
-                      isActive
-                        ? 'bg-accent/10 text-accent font-medium'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    ${isActive
+                      ? 'bg-accent/10 text-accent font-medium'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }
                   `}
                 >

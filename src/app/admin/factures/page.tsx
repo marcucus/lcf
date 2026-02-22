@@ -78,6 +78,8 @@ export default function FacturesPage() {
         invoiceNumber: invoice.invoiceNumber,
         items: invoice.items.map((item) => ({
           description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
           totalWithTax: item.totalWithTax,
         })),
         total: invoice.total,

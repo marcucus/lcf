@@ -39,7 +39,7 @@ async function generateInvoiceNumber(): Promise<string> {
   );
 
   const snapshot = await getDocs(q);
-  
+
   if (snapshot.empty) {
     return `${prefix}001`;
   }
@@ -95,21 +95,21 @@ export async function createInvoice(
   const invoiceNumber = await generateInvoiceNumber();
   const { subtotal, taxAmount, total } = calculateTotals(items);
 
-  const invoiceData: Omit<Invoice, 'invoiceId'> = {
+  const invoiceData: any = {
     invoiceNumber,
     userId,
     customerName,
     customerEmail,
-    customerPhone,
-    customerAddress,
+    customerPhone: customerPhone || null,
+    customerAddress: customerAddress || null,
     items,
     subtotal,
     taxAmount,
     total,
     status,
     origin,
-    dueDate: dueDate ? Timestamp.fromDate(dueDate) : undefined,
-    notes,
+    dueDate: dueDate ? Timestamp.fromDate(dueDate) : null,
+    notes: notes || null,
     createdBy,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
@@ -145,11 +145,12 @@ export async function createInvoiceFromAppointment(
   const invoiceNumber = await generateInvoiceNumber();
   const { subtotal, taxAmount, total } = calculateTotals(items);
 
-  const invoiceData: Omit<Invoice, 'invoiceId'> = {
+  const invoiceData: any = {
     invoiceNumber,
     userId: appointment.userId,
     customerName: appointment.customerName,
     customerEmail: userData.email,
+    customerPhone: appointment.vehicleInfo.plate || null, // Best guess if missing
     items,
     subtotal,
     taxAmount,
@@ -157,8 +158,8 @@ export async function createInvoiceFromAppointment(
     status,
     origin: 'appointment',
     relatedAppointmentId: appointment.appointmentId,
-    dueDate: dueDate ? Timestamp.fromDate(dueDate) : undefined,
-    notes,
+    dueDate: dueDate ? Timestamp.fromDate(dueDate) : null,
+    notes: notes || null,
     createdBy,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
@@ -183,13 +184,13 @@ export async function createInvoiceFromQuote(
 
   const invoiceNumber = await generateInvoiceNumber();
 
-  const invoiceData: Omit<Invoice, 'invoiceId'> = {
+  const invoiceData: any = {
     invoiceNumber,
     userId: quote.userId,
     customerName: quote.customerName,
     customerEmail: quote.customerEmail,
-    customerPhone: quote.customerPhone,
-    customerAddress: quote.customerAddress,
+    customerPhone: quote.customerPhone || null,
+    customerAddress: quote.customerAddress || null,
     items: quote.items,
     subtotal: quote.subtotal,
     taxAmount: quote.taxAmount,
@@ -197,9 +198,9 @@ export async function createInvoiceFromQuote(
     status,
     origin: 'quote',
     relatedQuoteId: quote.quoteId,
-    relatedAppointmentId: quote.relatedAppointmentId,
-    dueDate: dueDate ? Timestamp.fromDate(dueDate) : undefined,
-    notes: quote.notes,
+    relatedAppointmentId: quote.relatedAppointmentId || null,
+    dueDate: dueDate ? Timestamp.fromDate(dueDate) : null,
+    notes: quote.notes || null,
     createdBy,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
@@ -455,7 +456,7 @@ export async function searchInvoices(searchTerm: string): Promise<Invoice[]> {
   if (!db) throw new Error('Firebase not configured');
 
   const invoicesRef = collection(db, 'invoices');
-  
+
   // Search by invoice number
   const q1 = query(
     invoicesRef,
@@ -534,4 +535,60 @@ export async function getPaidInvoicesByDateRange(
     invoiceId: doc.id,
     ...doc.data(),
   } as Invoice));
+}
+
+/**
+ * Convert a Quotation into an Invoice.
+ * - Creates the Invoice document in `invoices` collection (origin: 'quote')
+ * - Updates the Quotation: convertedToInvoice = true, status = 'converted', invoiceId
+ * Returns the new invoiceId.
+ */
+export async function convertQuotationToInvoice(
+  createdBy: string,
+  quotation: import('@/types').Quotation,
+  dueDate?: Date
+): Promise<string> {
+  if (!db) throw new Error('Firebase not configured');
+
+  const invoiceNumber = await generateInvoiceNumber();
+
+  // Map QuotationItems → InvoiceItems (same shape)
+  const items: InvoiceItem[] = quotation.items.map((item) => ({ ...item }));
+  const { subtotal, taxAmount, total } = calculateTotals(items);
+
+  const invoiceData: any = {
+    invoiceNumber,
+    userId: quotation.userId || '',
+    customerName: quotation.clientName,
+    customerEmail: quotation.clientEmail,
+    customerPhone: quotation.clientPhone || null,
+    customerAddress: quotation.clientAddress || null,
+    items,
+    subtotal,
+    taxAmount,
+    total,
+    status: 'draft',
+    origin: 'quote',
+    relatedQuoteId: quotation.quotationId,
+    dueDate: dueDate ? Timestamp.fromDate(dueDate) : null,
+    notes: quotation.notes || null,
+    createdBy,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  };
+
+  // Create the invoice
+  const invoicesRef = collection(db, 'invoices');
+  const docRef = await addDoc(invoicesRef, invoiceData);
+
+  // Update the quotation
+  const quotationRef = doc(db, 'quotations', quotation.quotationId);
+  await updateDoc(quotationRef, {
+    status: 'converted',
+    convertedToInvoice: true,
+    invoiceId: docRef.id,
+    updatedAt: Timestamp.now(),
+  });
+
+  return docRef.id;
 }

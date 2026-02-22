@@ -143,7 +143,7 @@ export interface AuthContextType {
 }
 
 // Loyalty program types
-export type LoyaltyTransactionType = 
+export type LoyaltyTransactionType =
   | 'appointment_completed'
   | 'manual_adjustment'
   | 'reward_redemption'
@@ -285,8 +285,48 @@ export interface Quotation {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   createdBy: string;
+  // Client acceptance flow
+  acceptanceToken?: string;   // UUID v4 – unique token used in the acceptance link
+  acceptedAt?: Timestamp;     // When the client accepted the quotation
+  rejectedAt?: Timestamp;     // When the client rejected the quotation
+  rejectionReason?: string;   // Optional reason provided by the client
 }
 
 // Type aliases for backward compatibility
 export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
 export type QuotationItem = InvoiceItem;
+
+// ─── Work Order (Suivi des travaux) ────────────────────────────────────────────
+export type WorkOrderStatus = 'pending' | 'in_progress' | 'completed';
+
+export interface WorkOrder {
+  workOrderId: string;
+  /** Reference to the accepted quotation */
+  quotationId: string;
+  quotationNumber: string;
+  /** Client info copied from the quotation */
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  /** Description of work to be done (copied from quotation notes or auto-generated) */
+  description: string;
+  /** Items/prestations from the quotation */
+  items: QuotationItem[];
+  totalAmount: number;
+  status: WorkOrderStatus;
+  /** Admin notes on progress */
+  progressNotes?: string;
+  /** When status moved to in_progress */
+  startedAt?: Timestamp;
+  /** When status moved to completed */
+  completedAt?: Timestamp;
+  /** Whether an invoice was sent on completion */
+  invoiceSentOnCompletion?: boolean;
+  /** Related invoice ID (if converted) */
+  invoiceId?: string;
+  /** User ID of the client (if known) */
+  userId?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  createdBy: string;
+}

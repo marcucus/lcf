@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getInvoice, markInvoiceAsPaid, deleteInvoice } from '@/lib/firestore/invoices';
+import { getInvoice, markInvoiceAsPaid, deleteInvoice, markInvoiceAsSent } from '@/lib/firestore/invoices';
 import { Invoice } from '@/types';
-import { FiEdit2, FiTrash2, FiMail, FiCheck, FiDownload, FiArrowLeft } from 'react-icons/fi';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { FiEdit2, FiTrash2, FiMail, FiCheck, FiDownload, FiArrowLeft, FiPrinter } from 'react-icons/fi';
+import { sendEmailAndWait } from '@/lib/email/emailClient';
 
 export default function InvoiceViewPage() {
   const router = useRouter();
@@ -51,11 +51,25 @@ export default function InvoiceViewPage() {
 
     try {
       setSending(true);
-      const functions = getFunctions();
-      const sendInvoiceEmail = httpsCallable(functions, 'sendInvoiceEmail');
-      
-      await sendInvoiceEmail({ invoiceId: invoice.invoiceId });
-      
+      const emailResult = await sendEmailAndWait('INVOICE_SENT', {
+        customerEmail: invoice.customerEmail,
+        customerName: invoice.customerName,
+        invoiceNumber: invoice.invoiceNumber,
+        items: invoice.items.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalWithTax: item.totalWithTax,
+        })),
+        total: invoice.total,
+        dueDate: invoice.dueDate ? (invoice.dueDate as any).toDate().toISOString() : null,
+      });
+
+      if (!emailResult.success) {
+        throw new Error(emailResult.error || 'Erreur inconnue');
+      }
+
+      await markInvoiceAsSent(invoice.invoiceId);
       alert('Facture envoyée par email avec succès !');
       await loadInvoice(); // Reload to get updated status
     } catch (error) {
@@ -64,6 +78,10 @@ export default function InvoiceViewPage() {
     } finally {
       setSending(false);
     }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleMarkAsPaid = async () => {
@@ -140,7 +158,7 @@ export default function InvoiceViewPage() {
         <div>
           <button
             onClick={() => router.push('/admin/factures')}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#1CCEFF] transition-colors mb-4"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#1CCEFF] transition-colors mb-4 print:hidden"
           >
             <FiArrowLeft />
             Retour aux factures
@@ -156,7 +174,14 @@ export default function InvoiceViewPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 print:hidden">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <FiPrinter />
+            Imprimer
+          </button>
           {invoice.status !== 'paid' && (
             <button
               onClick={handleMarkAsPaid}

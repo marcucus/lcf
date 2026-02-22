@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { FiMenu, FiX, FiUser, FiLogOut, FiCalendar, FiTruck } from 'react-icons/fi';
+import { FiMenu, FiX, FiUser, FiLogOut, FiCalendar, FiTruck, FiClipboard, FiFileText, FiTool } from 'react-icons/fi';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -27,23 +27,23 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group">
             <div className="relative w-10 h-10 rounded-lg overflow-hidden ring-2 ring-accent/20 group-hover:ring-accent/40 transition-all duration-300">
-              <Image 
-                src="/logo.jpg" 
-                alt="LCF Auto Performance Logo" 
+              <Image
+                src="/logo.jpg"
+                alt="LCF Auto Performance Logo"
                 fill
                 className="object-cover"
                 priority
               />
             </div>
             <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-accent bg-clip-text text-transparent">
-              LCF AUTO
+              LCF
             </span>
           </Link>
 
           {/* Right side buttons */}
           <div className="flex items-center space-x-3 md:space-x-4">
             <ThemeToggle />
-            
+
             {user ? (
               <div className="relative hidden md:block">
                 <button
@@ -58,15 +58,15 @@ export function Header() {
                     {user.firstName || user.email}
                   </span>
                 </button>
-                
+
                 {isUserMenuOpen && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-40" 
+                    <div
+                      className="fixed inset-0 z-40"
                       onClick={() => setIsUserMenuOpen(false)}
                       aria-hidden="true"
                     />
-                    <div 
+                    <div
                       className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-bg-secondary rounded-xl shadow-2xl border border-light-border dark:border-dark-border py-2 z-50 animate-slide-down"
                       role="menu"
                       aria-label="User menu"
@@ -87,6 +87,33 @@ export function Header() {
                       >
                         <FiTruck className="w-4 h-4" aria-hidden="true" />
                         <span>Mes véhicules</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/mes-devis"
+                        className="flex items-center space-x-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
+                      >
+                        <FiClipboard className="w-4 h-4" aria-hidden="true" />
+                        <span>Mes devis</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/mes-factures"
+                        className="flex items-center space-x-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
+                      >
+                        <FiFileText className="w-4 h-4" aria-hidden="true" />
+                        <span>Mes factures</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/mes-travaux"
+                        className="flex items-center space-x-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-accent/10 hover:text-accent transition-all duration-200"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
+                      >
+                        <FiTool className="w-4 h-4" aria-hidden="true" />
+                        <span>Mes travaux</span>
                       </Link>
                       {(user.role === 'admin' || user.role === 'agendaManager') && (
                         <Link
@@ -164,6 +191,24 @@ export function Header() {
                     <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2" role="menuitem">
                       <FiTruck className="w-4 h-4" aria-hidden="true" />
                       <span>Mes véhicules</span>
+                    </button>
+                  </Link>
+                  <Link href="/dashboard/mes-devis" onClick={() => setIsMenuOpen(false)}>
+                    <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2" role="menuitem">
+                      <FiClipboard className="w-4 h-4" aria-hidden="true" />
+                      <span>Mes devis</span>
+                    </button>
+                  </Link>
+                  <Link href="/dashboard/mes-factures" onClick={() => setIsMenuOpen(false)}>
+                    <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2" role="menuitem">
+                      <FiFileText className="w-4 h-4" aria-hidden="true" />
+                      <span>Mes factures</span>
+                    </button>
+                  </Link>
+                  <Link href="/dashboard/mes-travaux" onClick={() => setIsMenuOpen(false)}>
+                    <button className="w-full px-4 py-3 text-sm font-medium text-left rounded-lg hover:bg-accent/10 hover:text-accent transition-all duration-200 flex items-center space-x-2" role="menuitem">
+                      <FiTool className="w-4 h-4" aria-hidden="true" />
+                      <span>Mes travaux</span>
                     </button>
                   </Link>
                   {(user.role === 'admin' || user.role === 'agendaManager') && (

@@ -565,15 +565,23 @@ export interface QuotationSentPayload {
   quotationNumber: string;
   items: Array<{
     description: string;
+    quantity: number;
+    unitPrice: number;
     totalWithTax: number;
   }>;
   totalAmount: number;
   validUntil?: string | number | null;
+  /** UUID token for the client acceptance link */
+  acceptanceToken?: string;
 }
 
 export async function sendQuotationEmail(
   payload: QuotationSentPayload
 ): Promise<SendEmailResult> {
+  const acceptUrl = payload.acceptanceToken
+    ? `${BASE_URL}/devis/${payload.acceptanceToken}`
+    : `${BASE_URL}/contact`;
+
   return sendEmail({
     to: payload.clientEmail,
     subject: `Votre devis n° ${payload.quotationNumber} — LCF Auto Performance`,
@@ -589,14 +597,14 @@ export async function sendQuotationEmail(
         },
         {
           type: 'text',
-          content: `Bonjour ${payload.clientName}, veuillez trouver ci-dessous votre devis.`,
+          content: `Bonjour ${payload.clientName}, veuillez trouver ci-dessous votre devis. Vous pouvez l'accepter ou le refuser directement en cliquant sur le bouton ci-dessous.`,
         },
         {
           type: 'info-table',
           rows: [
             ...payload.items.map((item) => ({
               icon: '🔹',
-              label: item.description,
+              label: `${item.quantity}x ${item.description}`,
               value: `${item.totalWithTax.toFixed(2)} € TTC`,
             })),
             {
@@ -606,26 +614,26 @@ export async function sendQuotationEmail(
             },
             ...(payload.validUntil
               ? [
-                  {
-                    icon: '📅',
-                    label: 'Valable jusqu\'au',
-                    value: fmtShortDate(payload.validUntil),
-                  },
-                ]
+                {
+                  icon: '📅',
+                  label: 'Valable jusqu\'au',
+                  value: fmtShortDate(payload.validUntil),
+                },
+              ]
               : []),
           ],
         },
         {
           type: 'buttons',
           buttons: [
-            { label: 'Nous contacter', href: `${BASE_URL}/contact` },
+            { label: '✅ Consulter et accepter le devis', href: acceptUrl },
           ],
         },
         {
           type: 'alert',
-          color: 'orange',
-          icon: '⏳',
-          title: 'Pour accepter ce devis',
+          color: 'blue',
+          icon: 'ℹ️',
+          title: 'Des questions sur ce devis ?',
           items: [
             `Téléphone : ${GARAGE_PHONE}`,
             `Email : ${GARAGE_EMAIL}`,
@@ -637,6 +645,7 @@ export async function sendQuotationEmail(
   });
 }
 
+
 // =================================================================
 // #17 — Invoice sent to client
 // =================================================================
@@ -646,6 +655,8 @@ export interface InvoiceSentPayload {
   invoiceNumber: string;
   items: Array<{
     description: string;
+    quantity: number;
+    unitPrice: number;
     totalWithTax: number;
   }>;
   total: number;
@@ -677,7 +688,7 @@ export async function sendInvoiceEmail(
           rows: [
             ...payload.items.map((item) => ({
               icon: '🔹',
-              label: item.description,
+              label: `${item.quantity}x ${item.description}`,
               value: `${item.totalWithTax.toFixed(2)} € TTC`,
             })),
             {
@@ -687,12 +698,12 @@ export async function sendInvoiceEmail(
             },
             ...(payload.dueDate
               ? [
-                  {
-                    icon: '📅',
-                    label: 'À régler avant le',
-                    value: fmtShortDate(payload.dueDate),
-                  },
-                ]
+                {
+                  icon: '📅',
+                  label: 'À régler avant le',
+                  value: fmtShortDate(payload.dueDate),
+                },
+              ]
               : []),
           ],
         },
@@ -901,3 +912,83 @@ export async function sendAppointmentReminderEmail(
     },
   });
 }
+
+// =================================================================
+// #25 — Work completed notification (with or without invoice)
+// =================================================================
+export interface WorkCompletedPayload {
+  clientEmail: string;
+  clientName: string;
+  workOrderDescription: string;
+  quotationNumber: string;
+  /** Whether the invoice was sent with the notification */
+  withInvoice: boolean;
+  invoiceNumber?: string;
+  invoiceTotal?: number;
+}
+
+export async function sendWorkCompletedEmail(
+  payload: WorkCompletedPayload
+): Promise<SendEmailResult> {
+  const invoiceAlertBlocks = payload.withInvoice && payload.invoiceNumber
+    ? [
+      {
+        type: 'alert' as const,
+        color: 'green' as const,
+        icon: '🧾',
+        title: `Facture n° ${payload.invoiceNumber} — ${payload.invoiceTotal?.toFixed(2)} € TTC`,
+        items: [
+          'Votre facture est disponible. Merci de procéder au règlement dès que possible.',
+          `Pour toute question : ${GARAGE_PHONE}`,
+        ],
+      },
+    ]
+    : [];
+
+  return sendEmail({
+    to: payload.clientEmail,
+    subject: `✅ Travaux terminés — Réf. ${payload.quotationNumber} — LCF Auto Performance`,
+    replyTo: GARAGE_EMAIL,
+    template: {
+      previewText: `Vos travaux (devis ${payload.quotationNumber}) sont terminés`,
+      blocks: [
+        {
+          type: 'banner',
+          emoji: '✅',
+          title: 'Travaux terminés !',
+          subtitle: `Référence devis : ${payload.quotationNumber}`,
+        },
+        {
+          type: 'text',
+          content: `Bonjour ${payload.clientName}, nous avons le plaisir de vous informer que vos travaux sont terminés et que votre véhicule est prêt à être récupéré.`,
+        },
+        {
+          type: 'info-table',
+          rows: [
+            { icon: '🔧', label: 'Travaux réalisés', value: payload.workOrderDescription },
+            { icon: '📄', label: 'Réf. devis', value: payload.quotationNumber },
+          ],
+        },
+        ...invoiceAlertBlocks,
+        {
+          type: 'buttons',
+          buttons: [
+            { label: 'Nous contacter', href: `${BASE_URL}/contact` },
+          ],
+        },
+        {
+          type: 'alert',
+          color: 'blue',
+          icon: 'ℹ️',
+          title: 'Informations pratiques',
+          items: [
+            `Adresse : ${GARAGE_ADDRESS}`,
+            `Téléphone : ${GARAGE_PHONE}`,
+            `Email : ${GARAGE_EMAIL}`,
+          ],
+        },
+      ],
+    },
+  });
+}
+

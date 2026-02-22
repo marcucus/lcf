@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "LCF Auto",
+    title: "LCF",
   },
   formatDetection: {
     telephone: false,
@@ -35,7 +35,6 @@ export const viewport: Viewport = {
   themeColor: "#1CCEFF",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({

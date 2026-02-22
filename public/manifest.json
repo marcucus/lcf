@@ -1,6 +1,6 @@
 {
   "name": "LCF Auto Performance",
-  "short_name": "LCF Auto",
+  "short_name": "LCF",
   "description": "Garage automobile - Entretien, Réparation, Re-programmation",
   "start_url": "/",
   "display": "standalone",
@@ -57,7 +57,10 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "lifestyle"],
+  "categories": [
+    "business",
+    "lifestyle"
+  ],
   "lang": "fr",
   "dir": "ltr"
 }

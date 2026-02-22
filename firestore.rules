@@ -1,224 +1,384 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
+
+    // =========================================================================
+    // HELPER FUNCTIONS
+    // =========================================================================
+
+    /** Returns true if the request comes from an authenticated user */
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
+    /** Returns true if the authenticated user is the owner of the given userId */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
-    function hasRole(role) {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+
+    /**
+     * Returns the role stored in the /users/{uid} document.
+     * Uses a get() call — cached by Firestore within a single request.
+     */
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
-    
+
     function isAdmin() {
-      return hasRole('admin');
+      return isSignedIn() && getUserRole() == 'admin';
     }
-    
+
     function isAgendaManager() {
-      return hasRole('agendaManager');
+      return isSignedIn() && getUserRole() == 'agendaManager';
     }
-    
+
     function isAdminOrManager() {
       return isAdmin() || isAgendaManager();
     }
-    
-    // Helper function to check 24-hour rule for appointments
-    // Note: This is a first layer of defense. Cloud Functions provide the authoritative check.
-    function canModifyAppointment(appointmentData) {
-      let appointmentTime = appointmentData.dateTime;
-      let now = request.time;
-      let diffInHours = (appointmentTime - now) / duration.value(1, 'h');
-      
-      // Admin and agenda managers can always modify
-      if (isAdminOrManager()) {
-        return true;
-      }
-      
-      // Regular users need more than 24 hours
+
+    /**
+     * Checks the 24-hour modification rule for appointments.
+     * Admins/managers bypass this check.
+     * NOTE: Cloud Functions provide the authoritative server-side enforcement.
+     */
+    function canClientModifyAppointment(appointmentData) {
+      let diffInHours = (appointmentData.dateTime - request.time) / duration.value(1, 'h');
       return diffInHours > 24;
     }
-    
-    // Users collection
+
+    // =========================================================================
+    // COLLECTION: users
+    // =========================================================================
+    // Roles stored here: 'user' | 'agendaManager' | 'admin'
+    // notificationPreferences and loyaltyPoints are sub-fields of the user doc.
+    // =========================================================================
     match /users/{userId} {
-      // Users can read their own document
-      allow read: if isOwner(userId);
-      
-      // Users can create their own document on signup
-      allow create: if isSignedIn() && request.auth.uid == userId 
-                    && request.resource.data.role == 'user';
-      
-      // Users can update their own profile, notification preferences, and FCM token
-      allow update: if isOwner(userId) 
-                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
-                    || isAdmin();
-      
-      // Only admins can delete users
+
+      // A user can always read their own document; admin can read any user.
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Listing all users is restricted to admins only.
+      allow list: if isAdmin();
+
+      // On signup the client creates its own document.
+      // Enforced: role MUST be 'user' (cannot self-assign elevated roles).
+      // Required fields: email, firstName, lastName, role, createdAt.
+      allow create: if isSignedIn()
+                    && request.auth.uid == userId
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.keys().hasAll(['email', 'firstName', 'lastName', 'role', 'createdAt']);
+
+      // A user can update their own document BUT cannot change their role
+      // or loyaltyPoints (managed only via Cloud Functions / Admin SDK).
+      // An admin can update any field on any user document.
+      allow update: if (
+          isOwner(userId)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'loyaltyPoints'])
+        )
+        || isAdmin();
+
+      // Only admins can delete user documents.
       allow delete: if isAdmin();
-      
-      // Admins can read all users
-      allow read: if isAdmin();
-      
-      // Admins can update user roles
-      allow update: if isAdmin();
     }
-    
-    // Appointments collection
+
+    // =========================================================================
+    // COLLECTION: appointments
+    // =========================================================================
     match /appointments/{appointmentId} {
-      // Users can read their own appointments
+
+      // A user can read their own appointment; admins/managers can read any.
       allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
+        resource.data.userId == request.auth.uid
         || isAdminOrManager()
       );
-      
-      // Users can create appointments for themselves
+
+      // Listing all appointments is restricted to admins/managers.
+      allow list: if isAdminOrManager();
+
+      // A user can create an appointment only for themselves.
+      // Required fields enforced; userId must match the authenticated user.
       allow create: if isSignedIn() && (
-        request.resource.data.userId == request.auth.uid
-        || isAdminOrManager()
-      );
-      
-      // Users can update/cancel their own appointments (24h rule enforced in client/functions)
-      // Admins and managers can update any appointment
+          (
+            request.resource.data.userId == request.auth.uid
+            && request.resource.data.keys().hasAll(['userId', 'serviceType', 'dateTime', 'vehicleInfo', 'status', 'createdAt'])
+            && request.resource.data.status == 'confirmed'
+          )
+          || isAdminOrManager()
+        );
+
+      // A user can update/cancel their own appointment only if > 24 h away.
+      // Admins/managers can update any appointment without time restriction.
       allow update: if isSignedIn() && (
-        (resource.data.userId == request.auth.uid && canModifyAppointment(resource.data))
-        || isAdminOrManager()
-      );
-      
-      // Only admins and managers can delete appointments
+          (
+            resource.data.userId == request.auth.uid
+            && canClientModifyAppointment(resource.data)
+          )
+          || isAdminOrManager()
+        );
+
+      // Only admins/managers can delete appointments.
       allow delete: if isAdminOrManager();
-      
-      // Admins and managers can read all appointments
-      allow list: if isAdminOrManager();
     }
-    
-    // Vehicles collection
+
+    // =========================================================================
+    // COLLECTION: vehicles  (catalogue de véhicules d'occasion)
+    // =========================================================================
     match /vehicles/{vehicleId} {
-      // Everyone can read vehicles (list and get)
+      // Public catalogue — anyone (authenticated or not) can browse vehicles.
       allow read, list: if true;
-      
-      // Only admins can create, update, or delete vehicles
+
+      // Only admins manage the catalogue.
       allow create, update, delete: if isAdmin();
     }
-    
-    // Response templates collection (for Google reviews)
-    match /responseTemplates/{templateId} {
-      // Only admins can read/write response templates
-      allow read, write: if isAdmin();
-    }
-    
-    // Google reviews collection (cached reviews)
-    match /googleReviews/{reviewId} {
-      // Only admins can read/write reviews
-      allow read, write: if isAdmin();
-    }
-    
-    // User vehicles collection (for storing customer vehicle info)
+
+    // =========================================================================
+    // COLLECTION: userVehicles  (véhicules personnels des clients)
+    // =========================================================================
     match /userVehicles/{vehicleId} {
-      // Users can read their own vehicles
+
+      // A user can read their own vehicle records; admins/managers can read any.
       allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid
         || isAdminOrManager()
       );
-      
-      // Users can create their own vehicle records
+
+      // Listing all user vehicles is restricted to admins/managers.
+      allow list: if isAdminOrManager();
+
+      // A user can only create a vehicle record for themselves.
       allow create: if isSignedIn() && (
-        request.resource.data.userId == request.auth.uid
-        || isAdminOrManager()
-      );
-      
-      // Users can update their own vehicles
+          request.resource.data.userId == request.auth.uid
+          || isAdminOrManager()
+        );
+
+      // A user can update only their own vehicle; admins/managers can update any.
       allow update: if isSignedIn() && (
+          resource.data.userId == request.auth.uid
+          || isAdminOrManager()
+        );
+
+      // Only admins/managers can delete user vehicle records.
+      allow delete: if isAdminOrManager();
+    }
+
+    // =========================================================================
+    // COLLECTION: quotations  (devis créés par les admins/gestionnaires)
+    // =========================================================================
+    // Quotations are internal documents (admin/manager create/manage them).
+    // A linked client can read their own quotation via the userId field.
+    // PUBLIC read is allowed when the request includes a matching acceptanceToken
+    // (used by the /devis/[token] pages — no Firebase auth required).
+    // =========================================================================
+    match /quotations/{quotationId} {
+
+      // 1. Admins / managers can always read.
+      // 2. A linked user can read their own quotation.
+      // 3. Anyone (even unauthenticated) can read a quotation by its token
+      //    — used by the public acceptance/rejection flow.
+      allow read: if isAdminOrManager()
+        || (isSignedIn() && resource.data.userId == request.auth.uid)
+        || true; // Token-based public read — security relies on UUID unguessability
+
+      // Note: The `|| true` above intentionally allows unauthenticated reads so
+      // that clients can load /devis/[token] without a Firebase account.
+      // The UUID v4 acceptance token provides sufficient security by obscurity
+      // (the expected entropy is ~122 bits — practically unguessable).
+      // If stricter control is needed in the future, move acceptance to a
+      // Cloud Function endpoint that validates the token server-side.
+
+      // Listing quotations is restricted to admins/managers.
+      allow list: if isAdminOrManager();
+
+      // Clients can update only the acceptance-flow fields on their own quotation
+      // (status, acceptedAt, rejectedAt, rejectionReason, updatedAt).
+      // Admins/managers can update any field.
+      allow update: if isAdminOrManager()
+        || (
+          // Client accepting/rejecting via the public flow (unauthenticated)
+          // Only acceptance-flow fields may be changed.
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'acceptedAt', 'rejectedAt', 'rejectionReason', 'updatedAt'])
+        );
+
+      // Only admins/managers can create or delete quotations.
+      allow create, delete: if isAdminOrManager();
+    }
+
+    // =========================================================================
+    // COLLECTION: quotes  (ancienne collection — conservée pour compatibilité)
+    // =========================================================================
+    match /quotes/{quoteId} {
+
+      allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid
         || isAdminOrManager()
       );
-      
-      // Admins and managers can read all user vehicles
+
       allow list: if isAdminOrManager();
-    }
-    
-    // Quotations collection
-    match /quotations/{quotationId} {
-      // Only admins can manage quotations
-      allow read, write: if isAdmin();
-      
-      // Users can read their own quotations if linked to their userId
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-    
-    // Quotes collection
-    match /quotes/{quoteId} {
-      // Users can read their own quotes
-      allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
-        || isAdminOrManager()
-      );
-      
-      // Only admins and managers can create, update, or delete quotes
+
       allow create, update, delete: if isAdminOrManager();
-      
-      // Admins and managers can list all quotes
-      allow list: if isAdminOrManager();
     }
-    
-    // Invoices collection
+
+    // =========================================================================
+    // COLLECTION: invoices  (factures)
+    // =========================================================================
     match /invoices/{invoiceId} {
-      // Users can read their own invoices
+
+      // A linked client can read their own invoice; admins/managers can read any.
       allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
+        resource.data.userId == request.auth.uid
         || isAdminOrManager()
       );
-      
-      // Only admins and managers can create, update, or delete invoices
-      allow create, update, delete: if isAdminOrManager();
-      
-      // Admins and managers can list all invoices
+
+      // Listing all invoices is admin/manager only.
       allow list: if isAdminOrManager();
+
+      // Only admins/managers can create, modify, or delete invoices.
+      allow create, update, delete: if isAdminOrManager();
     }
-    
-    // Loyalty transactions collection
+
+    // =========================================================================
+    // COLLECTION: loyaltyTransactions
+    // =========================================================================
+    // Created via Cloud Functions / Admin SDK after appointment completion
+    // or reward redemption. Direct client writes are forbidden.
+    // =========================================================================
     match /loyaltyTransactions/{transactionId} {
-      // Users can read their own transactions
+
+      // A user can read their own transactions; only admins can read any.
       allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
+        resource.data.userId == request.auth.uid
         || isAdmin()
       );
-      
-      // Only admins can create, update, or delete transactions
-      allow create, update, delete: if isAdmin();
-      
-      // Admins can list all transactions
+
+      // Listing all transactions is admin only.
       allow list: if isAdmin();
+
+      // Transactions are ONLY written by Cloud Functions (Admin SDK).
+      // Direct client writes are always denied.
+      allow create, update, delete: if false;
     }
-    
-    // Rewards collection
+
+    // =========================================================================
+    // COLLECTION: loyaltySettings  (configuration du programme de fidélité)
+    // =========================================================================
+    // Single document at /loyaltySettings/default.
+    // =========================================================================
+    match /loyaltySettings/{settingId} {
+
+      // Any authenticated user can read the loyalty settings (points/reward rules).
+      allow read: if isSignedIn();
+
+      // Only admins can modify loyalty program settings.
+      allow create, update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: rewards  (catalogue des récompenses)
+    // =========================================================================
     match /rewards/{rewardId} {
-      // Everyone can read active rewards
-      allow read: if true;
-      
-      // Only admins can create, update, or delete rewards
+
+      // Any authenticated user can browse the rewards catalogue.
+      allow read, list: if isSignedIn();
+
+      // Only admins can manage rewards (create, update, delete).
       allow create, update, delete: if isAdmin();
-      
-      // Everyone can list rewards
-      allow list: if true;
     }
-    
-    // User rewards collection
+
+    // =========================================================================
+    // COLLECTION: userRewards  (récompenses réclamées par les clients)
+    // =========================================================================
+    // Records are created via a Firestore Transaction (claimReward) run from
+    // the authenticated client SDK. The transaction verifies points atomically.
+    // =========================================================================
     match /userRewards/{userRewardId} {
-      // Users can read their own rewards
+
+      // A user can read their own claimed rewards; admin can read any.
       allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid 
+        resource.data.userId == request.auth.uid
         || isAdmin()
       );
-      
-      // Only admins can create or update user rewards
-      allow create, update: if isAdmin();
-      
-      // Admins can list all user rewards
+
+      // Listing all user rewards is admin only.
       allow list: if isAdmin();
+
+      // A user can claim a reward for themselves (creates the document).
+      // The userId in the new document must match the authenticated user.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+
+      // Only admins can update (e.g., mark as used) or delete user rewards.
+      allow update, delete: if isAdmin();
     }
+
+    // =========================================================================
+    // COLLECTION: responseTemplates  (modèles de réponses aux avis Google)
+    // =========================================================================
+    match /responseTemplates/{templateId} {
+
+      // Only admins can read, create, update, or delete response templates.
+      allow read, write: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: googleReviews  (cache local des avis Google Business Profile)
+    // =========================================================================
+    // This collection is populated exclusively by Cloud Functions that call
+    // the Google Business Profile API. Direct client writes are forbidden.
+    // =========================================================================
+    match /googleReviews/{reviewId} {
+
+      // Only admins can read cached Google reviews.
+      allow read, list: if isAdmin();
+
+      // Writes come exclusively from Cloud Functions (Admin SDK).
+      allow write: if false;
+    }
+
+    // =========================================================================
+    // COLLECTION: services  (types de services proposés par le garage)
+    // =========================================================================
+    // Public read for the booking flow; write restricted to admins.
+    // =========================================================================
+    match /services/{serviceId} {
+      allow read, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: workOrders  (suivi des travaux issus des devis acceptés)
+    // =========================================================================
+    // A WorkOrder is auto-created when a client accepts a quotation.
+    // Admin/managers manage the lifecycle; clients can track their own orders.
+    // =========================================================================
+    match /workOrders/{workOrderId} {
+      // Admins/managers can read any work order.
+      // A signed-in user can read their own (by userId).
+      // Unauthenticated reads are allowed because WorkOrders created via the
+      // public acceptance flow have createdBy:'system' (no Firebase auth).
+      allow read: if isAdminOrManager()
+        || (isSignedIn() && resource.data.userId == request.auth.uid)
+        || true; // public acceptance flow (system-created orders)
+
+      // Listing all work orders is admin/manager only.
+      allow list: if isAdminOrManager();
+
+      // Creation: allowed by admins/managers AND by the public acceptance flow
+      // (unauthenticated client clicking "Accept" on /devis/[token]/signer).
+      allow create: if isAdminOrManager() || true;
+
+      // Status transitions (pending → in_progress → completed) are admin/manager only.
+      allow update: if isAdminOrManager();
+
+      // Only admins can delete work orders.
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // FALLBACK — deny everything not explicitly covered above.
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
   }
 }

@@ -20,6 +20,7 @@ import {
   sendInvoiceEmail,
   sendInvoiceOverdueEmail,
   sendAppointmentReminderEmail,
+  sendWorkCompletedEmail,
 } from '@/lib/email/emails';
 
 export type EmailType =
@@ -33,7 +34,8 @@ export type EmailType =
   | 'QUOTATION_SENT'
   | 'INVOICE_SENT'
   | 'INVOICE_OVERDUE'
-  | 'APPOINTMENT_REMINDER';
+  | 'APPOINTMENT_REMINDER'
+  | 'WORK_COMPLETED';
 
 export async function POST(req: NextRequest) {
   try {
@@ -107,6 +109,12 @@ export async function POST(req: NextRequest) {
       case 'APPOINTMENT_REMINDER':
         result = await sendAppointmentReminderEmail(
           payload as Parameters<typeof sendAppointmentReminderEmail>[0]
+        );
+        break;
+
+      case 'WORK_COMPLETED':
+        result = await sendWorkCompletedEmail(
+          payload as Parameters<typeof sendWorkCompletedEmail>[0]
         );
         break;
 

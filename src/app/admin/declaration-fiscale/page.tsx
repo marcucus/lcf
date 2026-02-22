@@ -42,7 +42,7 @@ export default function FiscalDeclarationPage() {
       const start = new Date(startDate);
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      
+
       const data = await getPaidInvoicesByDateRange(start, end);
       setInvoices(data);
       setHasSearched(true);
@@ -54,65 +54,40 @@ export default function FiscalDeclarationPage() {
     }
   };
 
-  const handleExportCSV = async () => {
-    try {
-      const response = await fetch('/api/fiscal/export-csv', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          startDate,
-          endDate,
-        }),
-      });
+  const handleExportCSV = () => {
+    if (invoices.length === 0) return;
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'export CSV');
-      }
+    // Build CSV content from in-memory invoices
+    const headers = ['N° Facture', 'Date paiement', 'Client', 'Montant HT (€)', 'TVA (€)', 'Total TTC (€)', 'Notes'];
+    const rows = invoices.map((inv) => [
+      inv.invoiceNumber,
+      inv.paidDate?.toDate().toLocaleDateString('fr-FR') ?? '',
+      inv.customerName,
+      inv.subtotal.toFixed(2),
+      inv.taxAmount.toFixed(2),
+      inv.total.toFixed(2),
+      inv.notes ?? '',
+    ]);
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `declaration-fiscale-${startDate}-${endDate}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      alert('Erreur lors de l\'export CSV');
-    }
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')),
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `declaration-fiscale-${startDate}-${endDate}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
-  const handleExportPDF = async () => {
-    try {
-      const response = await fetch('/api/fiscal/export-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          startDate,
-          endDate,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'export PDF');
-      }
-
-      const html = await response.text();
-      const newWindow = window.open('', '_blank');
-      if (newWindow) {
-        newWindow.document.write(html);
-        newWindow.document.close();
-      }
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
-      alert('Erreur lors de l\'export PDF');
-    }
+  const handleExportPDF = () => {
+    if (invoices.length === 0) return;
+    window.print();
   };
 
   const totalRevenue = invoices.reduce((sum, inv) => sum + inv.total, 0);
@@ -209,7 +184,7 @@ export default function FiscalDeclarationPage() {
 
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Factures Payées de la Période</h2>
-            
+
             {invoices.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 Aucune facture payée trouvée pour cette période

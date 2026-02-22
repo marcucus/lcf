@@ -4,19 +4,22 @@ import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { 
-  getCurrentMonthRevenue, 
-  getCurrentYearRevenue, 
+import {
+  getCurrentMonthRevenue,
+  getCurrentYearRevenue,
   getCurrentFiscalYearRevenue,
   generateFiscalDeclarationData,
   RevenueSummary
 } from '@/lib/firestore/revenue';
-import { FiCalendar, FiTrendingUp, FiFileText, FiDownload } from 'react-icons/fi';
+import { getInvoices } from '@/lib/firestore/invoices';
+import { Invoice } from '@/types';
+import { FiCalendar, FiTrendingUp, FiFileText, FiDownload, FiDollarSign } from 'react-icons/fi';
 
 function RevenueDisplay() {
   const [monthlyRevenue, setMonthlyRevenue] = useState<RevenueSummary | null>(null);
   const [yearlyRevenue, setYearlyRevenue] = useState<RevenueSummary | null>(null);
   const [fiscalRevenue, setFiscalRevenue] = useState<RevenueSummary | null>(null);
+  const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -30,15 +33,17 @@ function RevenueDisplay() {
     setError(null);
 
     try {
-      const [monthly, yearly, fiscal] = await Promise.all([
+      const [monthly, yearly, fiscal, invoicesResult] = await Promise.all([
         getCurrentMonthRevenue(),
         getCurrentYearRevenue(),
         getCurrentFiscalYearRevenue(),
+        getInvoices({ status: 'paid' }),
       ]);
 
       setMonthlyRevenue(monthly);
       setYearlyRevenue(yearly);
       setFiscalRevenue(fiscal);
+      setPaidInvoices(invoicesResult.invoices);
     } catch (err) {
       console.error('Error loading revenue data:', err);
       setError('Erreur lors du chargement des données de chiffre d\'affaires');
@@ -70,11 +75,11 @@ Nombre total de rendez-vous: ${fiscalData.totalAppointments}
 DÉTAIL MENSUEL
 --------------
 ${fiscalData.monthlyBreakdown
-  .map(
-    (item) =>
-      `${getMonthName(item.month)}: ${item.revenue.toFixed(2)} € (${item.count} rendez-vous)`
-  )
-  .join('\n')}
+          .map(
+            (item) =>
+              `${getMonthName(item.month)}: ${item.revenue.toFixed(2)} € (${item.count} rendez-vous)`
+          )
+          .join('\n')}
 
 ===========================================
 Document généré automatiquement
@@ -116,10 +121,10 @@ Ne pas modifier
   };
 
   const formatDateRange = (startDate: Date, endDate: Date): string => {
-    const options: Intl.DateTimeFormatOptions = { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
+    const options: Intl.DateTimeFormatOptions = {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
     };
     return `${startDate.toLocaleDateString('fr-FR', options)} - ${endDate.toLocaleDateString('fr-FR', options)}`;
   };
@@ -235,6 +240,37 @@ Ne pas modifier
         </Card>
       </div>
 
+      {/* CA Facturé — basé sur les factures payées */}
+      <Card className="mt-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">CA Facturé</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Chiffre d&apos;affaires basé sur les factures payées
+            </p>
+          </div>
+          <div className="p-3 bg-accent/10 rounded-lg">
+            <FiDollarSign className="w-6 h-6 text-accent" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+            <p className="text-sm text-gray-500 mb-1">Total facturé (all time)</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {formatCurrency(paidInvoices.reduce((s, i) => s + i.total, 0))}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">{paidInvoices.length} facture(s) payée(s)</p>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+            <p className="text-sm text-gray-500 mb-1">TVA collectée</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {formatCurrency(paidInvoices.reduce((s, i) => s + i.taxAmount, 0))}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">Total HT : {formatCurrency(paidInvoices.reduce((s, i) => s + i.subtotal, 0))}</p>
+          </div>
+        </div>
+      </Card>
+
       {/* Fiscal Declaration Export */}
       <Card>
         <div className="flex items-start justify-between">
@@ -243,7 +279,7 @@ Ne pas modifier
               Déclaration fiscale
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Préparez les éléments à déclarer pour la période fiscale en cours. 
+              Préparez les éléments à déclarer pour la période fiscale en cours.
               Le fichier généré contiendra un récapitulatif détaillé de votre chiffre d&apos;affaires.
             </p>
             <Button
