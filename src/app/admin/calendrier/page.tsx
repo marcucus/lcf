@@ -26,7 +26,6 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { awardPointsForAppointment, getLoyaltySettings } from '@/lib/firestore/loyalty';
 import { sendEmailAsync } from '@/lib/email/emailClient';
 
 function CalendarContent() {
@@ -238,18 +237,7 @@ function CalendarContent() {
         const clientUser = clients.find((c) => c.uid === selectedAppointment.userId);
 
         if (isBeingCompleted && clientUser?.email) {
-          // Award loyalty points
           let pointsEarned = 0;
-          try {
-            await awardPointsForAppointment(
-              selectedAppointment.userId,
-              selectedAppointment.appointmentId
-            );
-            const settings = await getLoyaltySettings();
-            pointsEarned = settings.pointsPerAppointment;
-          } catch (e) {
-            console.error('Error awarding points:', e);
-          }
 
           // #13 — Completion email + points earned
           sendEmailAsync('APPOINTMENT_COMPLETED', {

@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
-import { FiCalendar, FiStar, FiTruck, FiUsers, FiFileText } from 'react-icons/fi';
+import { FiCalendar, FiStar, FiTruck, FiUsers, FiFileText, FiDollarSign } from 'react-icons/fi';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 
@@ -98,8 +98,8 @@ function AdminPage() {
               href="/admin/calendrier"
               className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <p className="font-medium text-gray-900 dark:text-white">
-                📅 Calendrier global
+              <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                <FiCalendar className="w-4 h-4 text-accent flex-shrink-0" /> Calendrier global
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Gérer tous les rendez-vous
@@ -112,8 +112,8 @@ function AdminPage() {
                   href="/admin/chiffre-affaires"
                   className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    💰 Chiffre d&apos;affaires
+                  <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <FiDollarSign className="w-4 h-4 text-accent flex-shrink-0" /> Chiffre d&apos;affaires
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Suivi des revenus et déclaration fiscale
@@ -124,8 +124,8 @@ function AdminPage() {
                   href="/admin/utilisateurs"
                   className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    👥 Utilisateurs
+                  <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <FiUsers className="w-4 h-4 text-accent flex-shrink-0" /> Utilisateurs
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Gérer les comptes utilisateurs
@@ -136,8 +136,8 @@ function AdminPage() {
                   href="/admin/vehicules"
                   className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    🚗 Parc de véhicules
+                  <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <FiTruck className="w-4 h-4 text-accent flex-shrink-0" /> Parc de véhicules
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Gérer le catalogue
@@ -148,8 +148,8 @@ function AdminPage() {
                   href="/admin/avis"
                   className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    ⭐ Avis Google
+                  <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <FiStar className="w-4 h-4 text-accent flex-shrink-0" /> Avis Google
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Gérer les avis clients
@@ -160,8 +160,8 @@ function AdminPage() {
                   href="/admin/factures"
                   className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    📄 Factures
+                  <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <FiFileText className="w-4 h-4 text-accent flex-shrink-0" /> Factures
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Gérer les factures et devis

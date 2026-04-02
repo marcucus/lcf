@@ -88,12 +88,6 @@ export function AdminSidebar() {
       icon: <FiTruck className="w-5 h-5" />,
       adminOnly: true,
     },
-    {
-      label: 'Programme fidélité',
-      href: '/admin/loyalty',
-      icon: <FiGift className="w-5 h-5" />,
-      adminOnly: true,
-    },
   ];
 
   const filteredNavItems = navItems.filter(

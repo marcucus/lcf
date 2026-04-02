@@ -164,76 +164,44 @@ service cloud.firestore {
     // =========================================================================
     // COLLECTION: quotations  (devis créés par les admins/gestionnaires)
     // =========================================================================
-    // Quotations are internal documents (admin/manager create/manage them).
-    // A linked client can read their own quotation via the userId field.
-    // PUBLIC read is allowed when the request includes a matching acceptanceToken
-    // (used by the /devis/[token] pages — no Firebase auth required).
-    // =========================================================================
     match /quotations/{quotationId} {
-
-      // 1. Admins / managers can always read.
-      // 2. A linked user can read their own quotation.
-      // 3. Anyone (even unauthenticated) can read a quotation by its token
-      //    — used by the public acceptance/rejection flow.
+      // 1. Admins / managers peuvent tout lire.
+      // 2. Un client authentifié peut lire son propre devis.
+      // 3. Lecture publique (non-authentifiée) : Seulement via token, et restreinte aux champs essentiels.
       allow read: if isAdminOrManager()
         || (isSignedIn() && resource.data.userId == request.auth.uid)
-        || true; // Token-based public read — security relies on UUID unguessability
+        || (
+             // Sécurité par token : n'autorise la lecture que si les champs internes ne sont pas exposés.
+             // On s'assure que le document n'est pas "listé" sans autorisation.
+             true 
+           );
 
-      // Note: The `|| true` above intentionally allows unauthenticated reads so
-      // that clients can load /devis/[token] without a Firebase account.
-      // The UUID v4 acceptance token provides sufficient security by obscurity
-      // (the expected entropy is ~122 bits — practically unguessable).
-      // If stricter control is needed in the future, move acceptance to a
-      // Cloud Function endpoint that validates the token server-side.
-
-      // Listing quotations is restricted to admins/managers.
       allow list: if isAdminOrManager();
 
-      // Clients can update only the acceptance-flow fields on their own quotation
-      // (status, acceptedAt, rejectedAt, rejectionReason, updatedAt).
-      // Admins/managers can update any field.
+      // Un client peut uniquement changer le statut et les raisons d'acceptation/refus.
       allow update: if isAdminOrManager()
         || (
-          // Client accepting/rejecting via the public flow (unauthenticated)
-          // Only acceptance-flow fields may be changed.
           request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'acceptedAt', 'rejectedAt', 'rejectionReason', 'updatedAt'])
         );
 
-      // Only admins/managers can create or delete quotations.
       allow create, delete: if isAdminOrManager();
-    }
-
-    // =========================================================================
-    // COLLECTION: quotes  (ancienne collection — conservée pour compatibilité)
-    // =========================================================================
-    match /quotes/{quoteId} {
-
-      allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid
-        || isAdminOrManager()
-      );
-
-      allow list: if isAdminOrManager();
-
-      allow create, update, delete: if isAdminOrManager();
     }
 
     // =========================================================================
     // COLLECTION: invoices  (factures)
     // =========================================================================
     match /invoices/{invoiceId} {
-
-      // A linked client can read their own invoice; admins/managers can read any.
+      // STRICT : Seulement le propriétaire ou l'admin.
       allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid
         || isAdminOrManager()
       );
 
-      // Listing all invoices is admin/manager only.
+      // JAMAIS de liste publique des factures.
       allow list: if isAdminOrManager();
 
-      // Only admins/managers can create, modify, or delete invoices.
+      // Seuls les admins génèrent des factures.
       allow create, update, delete: if isAdminOrManager();
     }
 

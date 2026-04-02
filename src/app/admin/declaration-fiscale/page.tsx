@@ -8,6 +8,7 @@ import { getPaidInvoicesByDateRange } from '@/lib/firestore/invoices';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { FiBarChart2, FiFileText, FiInfo } from 'react-icons/fi';
 
 export default function FiscalDeclarationPage() {
   const { user, loading } = useAuth();
@@ -147,14 +148,14 @@ export default function FiscalDeclarationPage() {
                 onClick={handleExportCSV}
                 disabled={invoices.length === 0}
               >
-                📊 Exporter en CSV
+                <FiBarChart2 className="w-4 h-4 mr-2 inline" /> Exporter en CSV
               </Button>
               <Button
                 onClick={handleExportPDF}
                 disabled={invoices.length === 0}
                 variant="secondary"
               >
-                📄 Exporter en PDF
+                <FiFileText className="w-4 h-4 mr-2 inline" /> Exporter en PDF
               </Button>
             </div>
           </div>
@@ -265,7 +266,7 @@ export default function FiscalDeclarationPage() {
           </Card>
 
           <Card className="p-6 mt-6 bg-blue-50 dark:bg-gray-800">
-            <h3 className="text-lg font-semibold mb-3">ℹ️ Informations pour la Déclaration</h3>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2"><FiInfo className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" /> Informations pour la Déclaration</h3>
             <ul className="list-disc list-inside space-y-2 text-sm">
               <li>Le chiffre d'affaires à déclarer est le montant TTC des factures <strong>payées</strong> sur la période</li>
               <li>Pour le régime auto-entrepreneur garage auto, conservez toutes les pièces justificatives</li>

@@ -4,27 +4,23 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { LoyaltyCard } from '@/components/loyalty/LoyaltyCard';
 import NotificationSettings from '@/components/notifications/NotificationSettings';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { FiCalendar, FiClock, FiSettings, FiX, FiEdit } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiSettings, FiX, FiEdit, FiTruck, FiPhone } from 'react-icons/fi';
 import { Appointment } from '@/types';
 import { getUserAppointments, cancelAppointment, canModifyAppointment } from '@/lib/firestore/appointments';
-import { getUserLoyaltyPoints } from '@/lib/firestore/loyalty';
 import { sendEmailAsync } from '@/lib/email/emailClient';
 
 function DashboardContent() {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [loadingPoints, setLoadingPoints] = useState(true);
 
   useEffect(() => {
     if (user) {
       loadAppointments();
-      loadLoyaltyPoints();
     }
   }, [user]);
 
@@ -38,19 +34,6 @@ function DashboardContent() {
       console.error('Error loading appointments:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadLoyaltyPoints = async () => {
-    if (!user) return;
-    
-    try {
-      const points = await getUserLoyaltyPoints(user.uid);
-      setLoyaltyPoints(points);
-    } catch (error) {
-      console.error('Error loading loyalty points:', error);
-    } finally {
-      setLoadingPoints(false);
     }
   };
 
@@ -148,8 +131,6 @@ function DashboardContent() {
               </div>
             </div>
           </Card>
-
-          <LoyaltyCard points={loyaltyPoints} loading={loadingPoints} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -238,15 +219,15 @@ function DashboardContent() {
             </h2>
             <div className="space-y-3">
               <Link href="/rendez-vous" className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <p className="font-medium text-gray-900 dark:text-white">📅 Prendre rendez-vous</p>
+                <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2"><FiCalendar className="w-4 h-4 text-accent flex-shrink-0" /> Prendre rendez-vous</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Réserver un créneau</p>
               </Link>
               <Link href="/vehicules" className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <p className="font-medium text-gray-900 dark:text-white">🚗 Véhicules d&apos;occasion</p>
+                <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2"><FiTruck className="w-4 h-4 text-accent flex-shrink-0" /> Véhicules d&apos;occasion</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Voir le catalogue</p>
               </Link>
               <Link href="/contact" className="block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <p className="font-medium text-gray-900 dark:text-white">📞 Contact</p>
+                <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2"><FiPhone className="w-4 h-4 text-accent flex-shrink-0" /> Contact</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Nous contacter</p>
               </Link>
             </div>

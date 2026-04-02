@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { FiCheckCircle, FiCalendar, FiClock, FiFileText, FiAlertCircle, FiChevronLeft, FiChevronRight, FiTruck, FiPlus } from 'react-icons/fi';
+import { FiCheckCircle, FiCalendar, FiClock, FiFileText, FiAlertCircle, FiChevronLeft, FiChevronRight, FiTruck, FiPlus, FiCheck, FiMail, FiMapPin } from 'react-icons/fi';
 import { ServiceType, VehicleInfo } from '@/types';
 import { startOfWeek, addDays, format, isSameDay, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale/fr';
@@ -520,7 +520,7 @@ function RendezVousPage() {
                                       : 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-accent hover:text-white hover:shadow-md hover:scale-95'
                                     }`}
                                 >
-                                  {isSelected ? '✓' : unavailable ? '' : time}
+                                  {isSelected ? <FiCheck className="w-3 h-3 inline" /> : unavailable ? '' : time}
                                 </button>
                               </div>
                             );
@@ -554,7 +554,7 @@ function RendezVousPage() {
                                       : 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-accent hover:text-white hover:shadow-md hover:scale-95'
                                     }`}
                                 >
-                                  {isSelected ? '✓' : unavailable ? '' : time}
+                                  {isSelected ? <FiCheck className="w-3 h-3 inline" /> : unavailable ? '' : time}
                                 </button>
                               </div>
                             );
@@ -858,9 +858,9 @@ function RendezVousPage() {
                         <div className="flex-1">
                           <p className="font-bold text-gray-900 dark:text-white mb-2">À noter</p>
                           <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                            <li>✉️ Un email de confirmation vous a été envoyé</li>
-                            <li>📅 Vous pouvez modifier votre rendez-vous jusqu&apos;à 24h avant</li>
-                            <li>📍 N&apos;oubliez pas d&apos;apporter vos papiers du véhicule</li>
+                            <li className="flex items-center gap-1.5"><FiMail className="w-4 h-4 flex-shrink-0" /> Un email de confirmation vous a été envoyé</li>
+                            <li className="flex items-center gap-1.5"><FiCalendar className="w-4 h-4 flex-shrink-0" /> Vous pouvez modifier votre rendez-vous jusqu&apos;à 24h avant</li>
+                            <li className="flex items-center gap-1.5"><FiMapPin className="w-4 h-4 flex-shrink-0" /> N&apos;oubliez pas d&apos;apporter vos papiers du véhicule</li>
                           </ul>
                         </div>
                       </div>

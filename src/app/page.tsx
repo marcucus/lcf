@@ -18,7 +18,13 @@ import {
   FiMail,
   FiClock,
   FiInstagram,
-  FiArrowRight
+  FiArrowRight,
+  FiAlertTriangle,
+  FiTruck,
+  FiCheck,
+  FiShield,
+  FiDollarSign,
+  FiAward
 } from 'react-icons/fi';
 
 import { MdOutlineConnectWithoutContact } from "react-icons/md";
@@ -249,17 +255,17 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {[
               {
-                emoji: '🔧',
+                icon: FiTool,
                 title: 'Expertise Professionnelle',
                 description: 'Une équipe de mécaniciens qualifiés et expérimentés à votre service'
               },
               {
-                emoji: '⚡',
+                icon: FiZap,
                 title: 'Service Rapide',
                 description: 'Intervention efficace pour minimiser votre temps d\'immobilisation'
               },
               {
-                emoji: '💯',
+                icon: FiAward,
                 title: 'Qualité Garantie',
                 description: 'Pièces de qualité et travail garanti pour votre satisfaction totale'
               }
@@ -269,8 +275,8 @@ export default function Home() {
                 className="text-center group animate-on-scroll"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="text-6xl mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                  {item.emoji}
+                <div className="mb-6 flex justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                  <item.icon className="w-16 h-16 text-accent" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
                   {item.title}
@@ -306,7 +312,7 @@ export default function Home() {
             ) : vehiclesError ? (
               <Card className="animate-on-scroll">
                 <div className="text-center py-16">
-                  <div className="text-7xl mb-8">⚠️</div>
+                  <FiAlertTriangle className="w-20 h-20 mx-auto mb-8 text-amber-500" />
                   <h3 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
                     Erreur de chargement
                   </h3>
@@ -318,7 +324,7 @@ export default function Home() {
             ) : vehicles.length === 0 ? (
               <Card className="animate-on-scroll">
                 <div className="text-center py-16">
-                  <div className="text-7xl mb-8 animate-bounce-slow">🚗</div>
+                  <FiTruck className="w-20 h-20 mx-auto mb-8 text-gray-400 dark:text-gray-500 animate-bounce-slow" />
                   <h3 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
                     Aucun véhicule disponible
                   </h3>
@@ -336,16 +342,16 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
               {[
-                { emoji: '✓', title: 'Véhicules contrôlés', desc: 'Tous nos véhicules sont contrôlés et révisés avant la vente' },
-                { emoji: '🛡️', title: 'Garantie incluse', desc: 'Garantie constructeur ou extension de garantie disponible' },
-                { emoji: '💰', title: 'Financement', desc: 'Solutions de financement adaptées à votre budget' }
+                { icon: FiCheck, title: 'Véhicules contrôlés', desc: 'Tous nos véhicules sont contrôlés et révisés avant la vente' },
+                { icon: FiShield, title: 'Garantie incluse', desc: 'Garantie constructeur ou extension de garantie disponible' },
+                { icon: FiDollarSign, title: 'Financement', desc: 'Solutions de financement adaptées à votre budget' }
               ].map((feature, index) => (
                 <div 
                   key={feature.title}
                   className="text-center animate-on-scroll"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="text-5xl mb-4">{feature.emoji}</div>
+                  <div className="flex justify-center mb-4"><feature.icon className="w-12 h-12 text-accent" /></div>
                   <h4 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
                     {feature.title}
                   </h4>

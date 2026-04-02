@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiX, FiTruck } from 'react-icons/fi';
 
 interface VehicleGalleryProps {
   images: string[];
@@ -16,7 +16,7 @@ export function VehicleGallery({ images, alt }: VehicleGalleryProps) {
   if (!images || images.length === 0) {
     return (
       <div className="w-full h-96 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-        <span className="text-gray-400 dark:text-gray-500 text-6xl">🚗</span>
+        <FiTruck className="w-20 h-20 text-gray-400 dark:text-gray-500" />
       </div>
     );
   }

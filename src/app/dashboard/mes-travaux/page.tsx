@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { getWorkOrdersByUserId } from '@/lib/firestore/workOrders';
 import { WorkOrder, WorkOrderStatus } from '@/types';
-import { FiTool, FiClock, FiPlay, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { FiTool, FiClock, FiPlay, FiCheckCircle, FiAlertCircle, FiCheck } from 'react-icons/fi';
 
 const STATUS_CONFIG: Record<WorkOrderStatus, { label: string; colorClass: string; bgClass: string; icon: React.ReactNode; progressColor: string }> = {
     pending: {
@@ -147,7 +147,7 @@ function MesTravauxContent() {
                                                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-400'
                                                             }`}
                                                     >
-                                                        {i < currentStep ? '✓' : i + 1}
+                                                        {i < currentStep ? <FiCheck className="w-4 h-4" /> : i + 1}
                                                     </div>
                                                     <p className={`text-xs mt-1 text-center font-medium ${i <= currentStep ? config.colorClass : 'text-gray-400'
                                                         }`}>
@@ -200,7 +200,7 @@ function MesTravauxContent() {
                                     <div className="text-xs text-gray-400 flex flex-wrap gap-4">
                                         <span>Créé : {formatDate(wo.createdAt)}</span>
                                         {wo.startedAt && <span>Démarré : {formatDate(wo.startedAt)}</span>}
-                                        {wo.completedAt && <span className="text-green-600 font-medium">✅ Terminé : {formatDate(wo.completedAt)}</span>}
+                                        {wo.completedAt && <span className="text-green-600 font-medium flex items-center gap-1.5"><FiCheckCircle className="w-4 h-4 flex-shrink-0" /> Terminé : {formatDate(wo.completedAt)}</span>}
                                     </div>
                                 </div>
                             </div>

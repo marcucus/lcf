@@ -5,7 +5,7 @@ import { User, UserRole } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiInfo } from 'react-icons/fi';
 
 interface UserModalProps {
   isOpen: boolean;
@@ -185,9 +185,10 @@ export function UserModal({
             {/* Info note for create mode */}
             {mode === 'create' && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                  ℹ️ Note : Pour le moment, cette fonctionnalité crée uniquement l&apos;entrée utilisateur. 
-                  La création du compte Firebase Auth doit être effectuée séparément.
+                <p className="text-sm text-blue-800 dark:text-blue-300 flex items-start gap-1.5">
+                  <FiInfo className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Note : Pour le moment, cette fonctionnalité crée uniquement l&apos;entrée utilisateur. 
+                  La création du compte Firebase Auth doit être effectuée séparément.</span>
                 </p>
               </div>
             )}

@@ -13,7 +13,7 @@ import { auth } from '@/lib/firebase/config';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { FiCheckCircle, FiAlertCircle, FiLock, FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiCheckCircle, FiAlertCircle, FiLock, FiMail, FiEye, FiEyeOff, FiXCircle } from 'react-icons/fi';
 
 function AuthActionContent() {
   const searchParams = useSearchParams();
@@ -247,7 +247,7 @@ function AuthActionContent() {
             <form onSubmit={handlePasswordReset} className="space-y-6">
               {error && (
                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 rounded-lg text-sm">
-                  <p className="font-medium">❌ {error}</p>
+                  <p className="font-medium flex items-center gap-1.5"><FiXCircle className="w-4 h-4 flex-shrink-0" /> {error}</p>
                 </div>
               )}
 

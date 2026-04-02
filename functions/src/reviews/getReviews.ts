@@ -289,7 +289,7 @@ export const getReviews = onCall(
     timeoutSeconds: 60,
     memory: '256MiB',
   },
-  async (request) => {
+  async (request: { auth: { uid: any; }; data: {}; }) => {
     // Authentication check
     if (!request.auth) {
       throw new HttpsError(

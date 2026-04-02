@@ -2,7 +2,7 @@
 
 import { Vehicle } from '@/types';
 import { Card } from '@/components/ui/Card';
-import { FiEdit2, FiTrash2, FiCheck, FiEye } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiCheck, FiEye, FiTruck } from 'react-icons/fi';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -50,7 +50,7 @@ export function VehicleCard({
           />
         ) : (
           <div className="flex items-center justify-center h-full">
-            <span className="text-gray-400 dark:text-gray-500 text-4xl">🚗</span>
+            <FiTruck className="w-12 h-12 text-gray-400 dark:text-gray-500" />
           </div>
         )}
         

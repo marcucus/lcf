@@ -23,6 +23,7 @@ import {
     FiUser,
     FiFileText,
     FiTool,
+    FiXCircle,
 } from 'react-icons/fi';
 
 const STATUS_CONFIG: Record<WorkOrderStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -253,7 +254,7 @@ function WorkOrderCard({
                                         onChange={() => setWithInvoice(true)}
                                         className="w-4 h-4 accent-green-600"
                                     />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">✅ Oui</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"><FiCheckCircle className="w-4 h-4 text-green-500" /> Oui</span>
                                 </label>
                                 <label className={`flex-1 flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${!withInvoice ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
                                     <input
@@ -263,7 +264,7 @@ function WorkOrderCard({
                                         onChange={() => setWithInvoice(false)}
                                         className="w-4 h-4 accent-blue-600"
                                     />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">❌ Non</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"><FiXCircle className="w-4 h-4 text-red-500" /> Non</span>
                                 </label>
                             </div>
                             {withInvoice && (

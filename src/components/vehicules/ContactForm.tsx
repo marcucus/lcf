@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
-import { FiMail, FiUser, FiPhone, FiMessageSquare } from 'react-icons/fi';
+import { FiMail, FiUser, FiPhone, FiMessageSquare, FiCheck } from 'react-icons/fi';
 
 interface ContactFormProps {
   vehicleName: string;
@@ -77,7 +77,7 @@ export function ContactForm({ vehicleName, vehicleId }: ContactFormProps) {
 
       {submitSuccess ? (
         <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-center">
-          <div className="text-green-600 dark:text-green-400 text-4xl mb-3">✓</div>
+          <div className="flex justify-center mb-3"><FiCheck className="w-10 h-10 text-green-600 dark:text-green-400" /></div>
           <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-2">
             Message envoyé avec succès !
           </h3>

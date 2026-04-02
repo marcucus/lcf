@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Quotation } from '@/types';
 import { getQuotationByToken, acceptQuotation } from '@/lib/firestore/quotations';
 import { createWorkOrderFromQuotation } from '@/lib/firestore/workOrders';
-import { FiCheckCircle, FiAlertCircle, FiArrowLeft } from 'react-icons/fi';
+import { FiCheckCircle, FiAlertCircle, FiArrowLeft, FiCheck, FiPhone } from 'react-icons/fi';
 
 const LEGAL_CLAUSES = [
     {
@@ -123,7 +123,7 @@ export default function QuotationSigningPage() {
                 <div className="max-w-md w-full mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
                     <FiCheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        Devis accepté ! 🎉
+                        Devis accepté !
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
                         Votre acceptation du devis <strong>{quotation!.quotationNumber}</strong> a bien été enregistrée.
@@ -132,12 +132,14 @@ export default function QuotationSigningPage() {
                     <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-left">
                         <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">Prochaines étapes :</p>
                         <ul className="space-y-1 text-sm text-green-700 dark:text-green-400">
-                            <li>✓ Notre équipe examine votre acceptation</li>
-                            <li>✓ Nous vous recontactons pour fixer la date d&apos;intervention</li>
-                            <li>✓ Une facture vous sera adressée à la fin des travaux</li>
+                            <li className="flex items-center gap-1.5"><FiCheck className="w-4 h-4 flex-shrink-0" /> Notre équipe examine votre acceptation</li>
+                            <li className="flex items-center gap-1.5"><FiCheck className="w-4 h-4 flex-shrink-0" /> Nous vous recontactons pour fixer la date d&apos;intervention</li>
+                            <li className="flex items-center gap-1.5"><FiCheck className="w-4 h-4 flex-shrink-0" /> Une facture vous sera adressée à la fin des travaux</li>
                         </ul>
                     </div>
-                    <p className="mt-4 text-sm text-gray-500">📞 07 61 88 82 63 · lcfautoperformance@outlook.fr</p>
+                    <p className="mt-4 text-sm text-gray-500 flex items-center justify-center gap-1.5">
+                        <FiPhone className="w-4 h-4 flex-shrink-0" /> 07 61 88 82 63 · lcfautoperformance@outlook.fr
+                    </p>
                 </div>
             </div>
         );

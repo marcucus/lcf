@@ -3,7 +3,7 @@
 import { Quotation } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { FiEdit2, FiTrash2, FiMail, FiFileText, FiCheck, FiX, FiEye } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiMail, FiFileText, FiCheck, FiX, FiEye, FiLink } from 'react-icons/fi';
 
 interface QuotationCardProps {
   quotation: Quotation;
@@ -208,7 +208,7 @@ export function QuotationCard({
               size="sm"
               title="Régénérer le lien d'acceptation client (invalide l'ancien)"
             >
-              🔗 Régénérer le lien
+              <FiLink className="w-4 h-4" /> Régénérer le lien
             </Button>
           )}
           <Button

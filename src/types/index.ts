@@ -10,7 +10,6 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
-  loyaltyPoints?: number;
   createdAt: Timestamp;
   fcmToken?: string;
   notificationPreferences?: NotificationPreferences;
@@ -186,15 +185,6 @@ export interface UserReward {
   claimedAt: Timestamp;
   usedAt?: Timestamp;
   expiresAt?: Timestamp;
-}
-
-export interface LoyaltySettings {
-  pointsPerAppointment: number;
-  pointsPerEuroSpent?: number;
-  welcomeBonusPoints?: number;
-  birthdayBonusPoints?: number;
-  referralBonusPoints?: number;
-  minPointsForRedemption: number;
 }
 
 // Invoice and Quote types

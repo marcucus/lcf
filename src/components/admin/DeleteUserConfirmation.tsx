@@ -79,8 +79,8 @@ export function DeleteUserConfirmation({
           </div>
 
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-            <p className="text-sm text-red-800 dark:text-red-300 font-medium">
-              ⚠️ Attention : Cette action est irréversible
+            <p className="text-sm text-red-800 dark:text-red-300 font-medium flex items-center gap-1.5">
+              <FiAlertTriangle className="w-4 h-4 flex-shrink-0" /> Attention : Cette action est irréversible
             </p>
             <p className="text-sm text-red-700 dark:text-red-400 mt-2">
               Le compte utilisateur et toutes ses données seront définitivement supprimés.

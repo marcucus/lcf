@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Quotation } from '@/types';
 import { getQuotationByToken, rejectQuotation } from '@/lib/firestore/quotations';
-import { FiCheckCircle, FiXCircle, FiFileText, FiAlertCircle, FiLoader } from 'react-icons/fi';
+import { FiCheckCircle, FiXCircle, FiFileText, FiAlertCircle, FiLoader, FiPhone, FiClock } from 'react-icons/fi';
+import React from 'react';
 
-const STATUS_LABELS: Record<string, { label: string; color: string; icon: string }> = {
-    accepted: { label: 'Accepté', color: 'text-green-600', icon: '✅' },
-    rejected: { label: 'Refusé', color: 'text-red-600', icon: '❌' },
-    converted: { label: 'Converti en facture', color: 'text-purple-600', icon: '🧾' },
-    expired: { label: 'Expiré', color: 'text-orange-600', icon: '⏰' },
+const STATUS_LABELS: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+    accepted: { label: 'Accepté', color: 'text-green-600', icon: FiCheckCircle },
+    rejected: { label: 'Refusé', color: 'text-red-600', icon: FiXCircle },
+    converted: { label: 'Converti en facture', color: 'text-purple-600', icon: FiFileText },
+    expired: { label: 'Expiré', color: 'text-orange-600', icon: FiAlertCircle },
 };
 
 export default function QuotationAcceptancePage() {
@@ -101,12 +102,14 @@ export default function QuotationAcceptancePage() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
                 <div className="max-w-md w-full mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
-                    <span className="text-6xl mb-4 block">❌</span>
+                    <FiXCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Devis refusé</h1>
                     <p className="text-gray-600 dark:text-gray-400">
                         Votre refus a bien été enregistré. Nous en prenons note et restons disponibles si vous avez des questions.
                     </p>
-                    <p className="mt-4 text-sm text-gray-500">📞 07 61 88 82 63 · lcfautoperformance@outlook.fr</p>
+                    <p className="mt-4 text-sm text-gray-500 flex items-center justify-center gap-1.5">
+                        <FiPhone className="w-4 h-4 flex-shrink-0" /> 07 61 88 82 63 · lcfautoperformance@outlook.fr
+                    </p>
                 </div>
             </div>
         );
@@ -118,7 +121,7 @@ export default function QuotationAcceptancePage() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
                 <div className="max-w-md w-full mx-4 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
-                    <span className="text-6xl mb-4 block">{terminalStatus.icon}</span>
+                    <terminalStatus.icon className={`w-16 h-16 mx-auto mb-4 ${terminalStatus.color}`} />
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                         Devis {terminalStatus.label.toLowerCase()}
                     </h1>
@@ -130,8 +133,8 @@ export default function QuotationAcceptancePage() {
                             Le {formatDate(quotation!.acceptedAt)}
                         </p>
                     )}
-                    <p className="mt-4 text-sm text-gray-500">
-                        Pour toute question : 📞 07 61 88 82 63
+                    <p className="mt-4 text-sm text-gray-500 flex items-center justify-center gap-1.5">
+                        Pour toute question : <FiPhone className="w-4 h-4 flex-shrink-0" /> 07 61 88 82 63
                     </p>
                 </div>
             </div>

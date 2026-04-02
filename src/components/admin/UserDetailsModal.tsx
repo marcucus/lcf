@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { User, Appointment } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { FiX, FiUser, FiMail, FiCalendar, FiClock } from 'react-icons/fi';
+import { FiX, FiUser, FiMail, FiCalendar, FiClock, FiTruck } from 'react-icons/fi';
 import { getUserAppointments } from '@/lib/firestore/appointments';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -218,8 +218,8 @@ export function UserDetailsModal({
                     </div>
 
                     {appointment.vehicleInfo && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        🚗 {appointment.vehicleInfo.make} {appointment.vehicleInfo.model} 
+                      <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                        <FiTruck className="w-4 h-4 flex-shrink-0" /> {appointment.vehicleInfo.make} {appointment.vehicleInfo.model} 
                         {appointment.vehicleInfo.plate && ` - ${appointment.vehicleInfo.plate}`}
                       </p>
                     )}

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { FiGrid, FiList, FiSearch } from 'react-icons/fi';
+import { FiGrid, FiList, FiSearch, FiTruck } from 'react-icons/fi';
 import { Vehicle, FuelType } from '@/types';
 import { getVehiclesForSale } from '@/lib/firestore/vehicles';
 import Image from 'next/image';
@@ -165,7 +165,7 @@ export default function VehiculesPage() {
               />
             ) : (
               <div className="flex items-center justify-center h-full">
-                <span className="text-gray-400 dark:text-gray-500 text-4xl">🚗</span>
+                <FiTruck className="w-12 h-12 text-gray-400 dark:text-gray-500" />
               </div>
             )}
 
@@ -228,7 +228,7 @@ export default function VehiculesPage() {
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <span className="text-gray-400 dark:text-gray-500 text-4xl">🚗</span>
+                  <FiTruck className="w-12 h-12 text-gray-400 dark:text-gray-500" />
                 </div>
               )}
 

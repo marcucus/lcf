@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { FiCheckCircle, FiMail, FiLock, FiArrowLeft } from 'react-icons/fi';
+import { FiCheckCircle, FiMail, FiLock, FiArrowLeft, FiXCircle } from 'react-icons/fi';
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
@@ -140,7 +140,7 @@ export default function ResetPasswordPage() {
 
               {error && (
                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 rounded-lg text-sm animate-slide-down">
-                  <p className="font-medium">❌ {error}</p>
+                  <p className="font-medium flex items-center gap-1.5"><FiXCircle className="w-4 h-4 flex-shrink-0" /> {error}</p>
                 </div>
               )}
 
